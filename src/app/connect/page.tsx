@@ -5,12 +5,14 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle, XCircle, LogIn } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function ConnectPage() {
-    const { profile, setProfile } = useAppContext();
+    const { profile, setProfile, loading } = useAppContext();
     const { toast } = useToast();
 
     const handleConnect = () => {
+        if (!profile) return;
         // Mocking the OAuth flow
         toast({ title: "Redirecting to LinkedIn..." });
         setTimeout(() => {
@@ -20,9 +22,28 @@ export default function ConnectPage() {
     };
 
     const handleDisconnect = () => {
+        if (!profile) return;
         setProfile({ ...profile, linkedinConnected: false });
         toast({ title: "Disconnected from LinkedIn.", variant: "destructive" });
     };
+    
+    if (loading || !profile) {
+        return (
+            <div className="mx-auto grid w-full max-w-2xl gap-2">
+                <h1 className="text-3xl font-semibold">Connections</h1>
+                <p className="text-muted-foreground">Manage your social media connections.</p>
+                <Card className="mt-4">
+                    <CardHeader>
+                        <Skeleton className="h-8 w-1/3" />
+                        <Skeleton className="h-4 w-2/3" />
+                    </CardHeader>
+                    <CardContent>
+                         <Skeleton className="h-10 w-40" />
+                    </CardContent>
+                </Card>
+            </div>
+        )
+    }
 
     return (
         <div className="mx-auto grid w-full max-w-2xl gap-2">

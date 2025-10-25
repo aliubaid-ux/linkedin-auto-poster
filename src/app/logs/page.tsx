@@ -13,6 +13,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle, XCircle, AlertTriangle } from "lucide-react";
 import type { LogEntry } from "@/lib/types";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const statusIcons = {
     success: <CheckCircle className="h-4 w-4 text-green-500" />,
@@ -27,7 +28,50 @@ const statusColors: { [key in LogEntry['status']]: 'default' | 'secondary' | 'de
 }
 
 export default function LogsPage() {
-    const { logs } = useAppContext();
+    const { logs, loading } = useAppContext();
+    
+    if (loading) {
+        return (
+             <div className="flex flex-col gap-4">
+                <div className="flex items-center">
+                    <h1 className="text-2xl font-bold">Automation Logs</h1>
+                </div>
+
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Cron Job History</CardTitle>
+                        <CardDescription>A log of all automated post generation and publishing runs.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead className="w-[100px]">Status</TableHead>
+                                    <TableHead>Timestamp</TableHead>
+                                    <TableHead>Run ID</TableHead>
+                                    <TableHead>Generated</TableHead>
+                                    <TableHead>Posted</TableHead>
+                                    <TableHead>Errors</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {[...Array(3)].map((_, i) => (
+                                    <TableRow key={i}>
+                                        <TableCell><Skeleton className="h-6 w-20" /></TableCell>
+                                        <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                                        <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                                        <TableCell><Skeleton className="h-4 w-8" /></TableCell>
+                                        <TableCell><Skeleton className="h-4 w-8" /></TableCell>
+                                        <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </CardContent>
+                </Card>
+            </div>
+        )
+    }
 
     return (
         <div className="flex flex-col gap-4">

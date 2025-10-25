@@ -36,6 +36,7 @@ import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import type { DraftPost } from "@/lib/types";
 import { ClientOnly } from "@/components/client-only";
+import { Skeleton } from "@/components/ui/skeleton";
 
 function DraftCard({ draft }: { draft: DraftPost }) {
   const { toast } = useToast();
@@ -152,9 +153,44 @@ function DraftCard({ draft }: { draft: DraftPost }) {
 }
 
 export default function DraftsPage() {
-  const { drafts } = useAppContext();
+  const { drafts, loading } = useAppContext();
 
   const statusFilters: DraftPost["status"][] = ["draft", "scheduled", "posted", "failed"];
+
+  if (loading) {
+      return (
+        <div className="flex flex-col gap-4">
+            <div className="flex items-center">
+                <h1 className="text-2xl font-bold">Drafts</h1>
+                <Skeleton className="h-10 w-36 ml-auto" />
+            </div>
+            <Tabs defaultValue="all">
+                <TabsList>
+                    <TabsTrigger value="all">All</TabsTrigger>
+                    {statusFilters.map(status => (
+                        <TabsTrigger key={status} value={status} className="capitalize">{status}</TabsTrigger>
+                    ))}
+                </TabsList>
+                <TabsContent value="all" className="grid gap-4 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
+                    {[1, 2, 3].map(i => (
+                        <Card key={i}>
+                            <CardHeader>
+                                <Skeleton className="h-6 w-3/4" />
+                                <Skeleton className="h-4 w-1/2" />
+                            </CardHeader>
+                            <CardContent>
+                                <Skeleton className="h-20 w-full" />
+                            </CardContent>
+                            <CardFooter>
+                                <Skeleton className="h-10 w-24" />
+                            </CardFooter>
+                        </Card>
+                    ))}
+                </TabsContent>
+            </Tabs>
+        </div>
+      )
+  }
 
   return (
     <div className="flex flex-col gap-4">

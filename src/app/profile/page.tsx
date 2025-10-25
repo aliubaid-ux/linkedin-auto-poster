@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -32,6 +33,7 @@ import {
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useToast } from "@/hooks/use-toast";
 import { X } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const profileFormSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters."),
@@ -44,16 +46,32 @@ const profileFormSchema = z.object({
 type ProfileFormValues = z.infer<typeof profileFormSchema>;
 
 export default function ProfilePage() {
-  const { profile, setProfile } = useAppContext();
+  const { profile, setProfile, loading } = useAppContext();
   const { toast } = useToast();
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
     defaultValues: {
-      ...profile,
-      niches: profile.niches.map(n => ({ value: n }))
+      name: profile?.name || '',
+      niches: profile?.niches.map(n => ({ value: n })) || [],
+      tone: profile?.tone || 'Expert + Conversational',
+      postingMode: profile?.postingMode || 'manual',
+      preferredTimeUTC: profile?.preferredTimeUTC || '10:00',
     },
   });
+  
+  useEffect(() => {
+    if (profile) {
+      form.reset({
+        name: profile.name,
+        niches: profile.niches.map(n => ({ value: n })),
+        tone: profile.tone,
+        postingMode: profile.postingMode,
+        preferredTimeUTC: profile.preferredTimeUTC,
+      });
+    }
+  }, [profile, form]);
+
 
   const { fields, append, remove } = useFieldArray({
     name: "niches",
@@ -61,6 +79,7 @@ export default function ProfilePage() {
   });
 
   function onSubmit(data: ProfileFormValues) {
+    if (!profile) return;
     const updatedProfile = {
       ...profile,
       ...data,
@@ -71,6 +90,41 @@ export default function ProfilePage() {
       title: "Profile updated",
       description: "Your settings have been saved successfully.",
     });
+  }
+  
+  if (loading || !profile) {
+    return (
+        <div className="mx-auto grid w-full max-w-6xl gap-2">
+            <h1 className="text-3xl font-semibold">Profile & Settings</h1>
+            <p className="text-muted-foreground">Customize your LinkFlow AI experience.</p>
+            <div className="space-y-8 mt-4">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Personal Information</CardTitle>
+                        <CardDescription>
+                            This information helps personalize the generated content.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                       <Skeleton className="h-10 w-1/2" />
+                       <Skeleton className="h-20 w-full" />
+                    </CardContent>
+                </Card>
+                 <Card>
+                    <CardHeader>
+                        <CardTitle>Content Preferences</CardTitle>
+                         <CardDescription>
+                            Define the voice and automation level for your posts.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <Skeleton className="h-10 w-1/2" />
+                        <Skeleton className="h-20 w-full" />
+                    </CardContent>
+                </Card>
+            </div>
+        </div>
+    )
   }
 
   return (

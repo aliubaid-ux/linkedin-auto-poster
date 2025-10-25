@@ -29,13 +29,13 @@ export function useCollection<T = DocumentData>(
   const deps = options?.deps || [];
 
   const memoizedQuery = useMemo(() => {
-    if (!firestore) return null;
+    if (!firestore || !path) return null;
     return collection(firestore, path) as Query<T>;
   }, [firestore, path, ...deps]);
 
   useEffect(() => {
     if (!memoizedQuery) {
-      if (firestore) {
+      if (firestore || !path) {
         setLoading(false);
       }
       return;
@@ -69,7 +69,7 @@ export function useCollection<T = DocumentData>(
     );
 
     return () => unsubscribe();
-  }, [memoizedQuery, firestore]);
+  }, [memoizedQuery, firestore, path]);
 
   return { data, loading, error };
 }

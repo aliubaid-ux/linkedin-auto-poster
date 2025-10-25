@@ -1,55 +1,73 @@
 "use client";
 
-import { createContext, useContext, ReactNode } from 'react';
-import useLocalStorage from '@/hooks/use-local-storage';
+import { createContext, useContext, ReactNode, useEffect } from 'react';
+import { signInAnonymously } from 'firebase/auth';
+
+import { useUser } from '@/firebase/auth/use-user';
+import { useAuth } from '@/firebase/auth/use-auth';
+import { useCollection } from '@/firebase/firestore/use-collection';
+import { useDoc } from '@/firebase/firestore/use-doc';
+
 import type { Profile, DraftPost, LearnedTone, LogEntry } from '@/lib/types';
-import { initialProfile, initialDrafts, initialLearnedTone, initialLogs } from '@/lib/data';
+import { initialProfile, initialLearnedTone, initialLogs } from '@/lib/data';
 
 interface AppContextType {
-  profile: Profile;
-  setProfile: (profile: Profile) => void;
+  profile: Profile | null;
   drafts: DraftPost[];
-  setDrafts: (drafts: DraftPost[]) => void;
+  learnedTone: LearnedTone | null;
+  logs: LogEntry[];
+  loading: boolean;
+  // Dummy functions for now, will be implemented with firestore writes
+  setProfile: (profile: Profile) => void;
   addDraft: (draft: DraftPost) => void;
   updateDraft: (updatedDraft: DraftPost) => void;
-  learnedTone: LearnedTone;
-  setLearnedTone: (tone: LearnedTone) => void;
-  logs: LogEntry[];
-  setLogs: (logs: LogEntry[]) => void;
   addLog: (log: LogEntry) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export function AppProvider({ children }: { children: ReactNode }) {
-  const [profile, setProfile] = useLocalStorage<Profile>('linkflow-profile', initialProfile);
-  const [drafts, setDrafts] = useLocalStorage<DraftPost[]>('linkflow-drafts', initialDrafts);
-  const [learnedTone, setLearnedTone] = useLocalStorage<LearnedTone>('linkflow-learned-tone', initialLearnedTone);
-  const [logs, setLogs] = useLocalStorage<LogEntry[]>('linkflow-logs', initialLogs);
+  const auth = useAuth();
+  const { user, loading: userLoading } = useUser();
 
-  const addDraft = (draft: DraftPost) => {
-    setDrafts([draft, ...drafts]);
-  };
+  useEffect(() => {
+    if (!user && auth) {
+      signInAnonymously(auth).catch((error) => {
+        console.error("Anonymous sign-in error:", error);
+      });
+    }
+  }, [user, auth]);
 
-  const updateDraft = (updatedDraft: DraftPost) => {
-    setDrafts(drafts.map(d => d.id === updatedDraft.id ? updatedDraft : d));
-  };
+  const userId = user?.uid;
+
+  const { data: profileData, loading: profileLoading } = useDoc<Profile>(
+    userId ? `/users/${userId}` : ''
+  );
+  const { data: draftsData, loading: draftsLoading } = useCollection<DraftPost>(
+    userId ? `/users/${userId}/drafts` : ''
+  );
+  const { data: learnedToneData, loading: learnedToneLoading } = useDoc<LearnedTone>(
+     userId ? `/users/${userId}/learnedTone/default` : ''
+  );
+  const { data: logsData, loading: logsLoading } = useCollection<LogEntry>(
+     userId ? `/users/${userId}/logs` : ''
+  );
   
-  const addLog = (log: LogEntry) => {
-    setLogs([log, ...logs]);
-  };
+  // Dummy functions, to be replaced
+  const setProfile = (profile: Profile) => console.log("setProfile", profile);
+  const addDraft = (draft: DraftPost) => console.log("addDraft", draft);
+  const updateDraft = (updatedDraft: DraftPost) => console.log("updateDraft", updatedDraft);
+  const addLog = (log: LogEntry) => console.log("addLog", log);
 
   const value = {
-    profile,
+    profile: profileData || initialProfile,
+    drafts: draftsData || [],
+    learnedTone: learnedToneData || initialLearnedTone,
+    logs: logsData || [],
+    loading: userLoading || profileLoading || draftsLoading || learnedToneLoading || logsLoading,
     setProfile,
-    drafts,
-    setDrafts,
     addDraft,
     updateDraft,
-    learnedTone,
-    setLearnedTone,
-    logs,
-    setLogs,
     addLog,
   };
 

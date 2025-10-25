@@ -47,6 +47,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { ClientOnly } from "@/components/client-only";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const formSchema = z.object({
   topic: z.string().min(10, {
@@ -55,7 +56,7 @@ const formSchema = z.object({
 });
 
 export default function DashboardPage() {
-  const { profile, drafts, addDraft, learnedTone } = useAppContext();
+  const { profile, drafts, addDraft, learnedTone, loading } = useAppContext();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -68,6 +69,16 @@ export default function DashboardPage() {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
+    if (!profile || !learnedTone) {
+      toast({
+        title: "Profile not loaded",
+        description: "Please wait for your profile to load before generating posts.",
+        variant: "destructive",
+      });
+      setIsLoading(false);
+      return;
+    }
+
     try {
       toast({
         title: "Generating post...",
@@ -139,6 +150,44 @@ export default function DashboardPage() {
     navigator.clipboard.writeText(text);
     toast({ title: "Copied to clipboard!" });
   };
+
+  if (loading) {
+    return (
+        <div className="grid flex-1 items-start gap-4 md:gap-8 lg:grid-cols-3 xl:grid-cols-3">
+          <div className="grid auto-rows-max items-start gap-4 md:gap-8 lg:col-span-2">
+            <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4">
+              <Card><CardHeader><Skeleton className="h-12 w-24" /></CardHeader></Card>
+              <Card><CardHeader><Skeleton className="h-12 w-24" /></CardHeader></Card>
+              <Card><CardHeader><Skeleton className="h-12 w-24" /></CardHeader></Card>
+              <Card><CardHeader><Skeleton className="h-12 w-24" /></CardHeader></Card>
+            </div>
+            <Card>
+              <CardHeader>
+                <CardTitle>Generate New Post</CardTitle>
+                <CardDescription>
+                  Enter a trending topic, news headline, or a simple idea to
+                  generate a new LinkedIn post.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-24 w-full" />
+                <Skeleton className="h-10 w-full mt-4" />
+              </CardContent>
+            </Card>
+          </div>
+           <div className="grid auto-rows-max items-start gap-4 md:gap-8 lg:col-span-1">
+             <Card>
+               <CardHeader><CardTitle>Recent Drafts</CardTitle></CardHeader>
+               <CardContent className="space-y-4">
+                  <div className="space-y-2"><Skeleton className="h-4 w-3/4" /><Skeleton className="h-4 w-full" /><Skeleton className="h-4 w-1/2" /></div>
+                  <Separator/>
+                  <div className="space-y-2"><Skeleton className="h-4 w-3/4" /><Skeleton className="h-4 w-full" /><Skeleton className="h-4 w-1/2" /></div>
+               </CardContent>
+             </Card>
+           </div>
+        </div>
+      )
+  }
 
   return (
     <div className="grid flex-1 items-start gap-4 md:gap-8 lg:grid-cols-3 xl:grid-cols-3">
@@ -234,7 +283,7 @@ export default function DashboardPage() {
                     </FormItem>
                   )}
                 />
-                <Button type="submit" disabled={isLoading} className="w-full">
+                <Button type="submit" disabled={isLoading || loading} className="w-full">
                   {isLoading ? (
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   ) : (

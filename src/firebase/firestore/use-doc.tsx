@@ -28,11 +28,11 @@ export function useDoc<T = DocumentData>(
   const deps = options?.deps || [];
 
   const memoizedRef = useMemo(() => {
-    if (!firestore) return null;
+    if (!firestore || !path) return null;
     // Simple path validation
     const pathSegments = path.split('/').filter(Boolean);
     if (pathSegments.length % 2 !== 0) {
-      console.warn(`Invalid Firestore document path: "${path}". Paths must have an even number of segments.`);
+      // This is a collection path, not a doc path. Silently fail.
       return null;
     }
     return doc(firestore, path) as DocumentReference<T>;
@@ -41,9 +41,9 @@ export function useDoc<T = DocumentData>(
 
   useEffect(() => {
     if (!memoizedRef) {
-        if(firestore){
-            setLoading(false);
-        }
+      if(firestore || !path){
+          setLoading(false);
+      }
       return;
     }
 
@@ -75,7 +75,7 @@ export function useDoc<T = DocumentData>(
     );
 
     return () => unsubscribe();
-  }, [memoizedRef, firestore]);
+  }, [memoizedRef, firestore, path]);
 
   return { data, loading, error };
 }

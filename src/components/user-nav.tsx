@@ -15,9 +15,11 @@ import {
 import { useAppContext } from "@/context/app-provider";
 import Link from 'next/link';
 import { PlaceHolderImages } from "@/lib/placeholder-images";
+import { useUser } from "@/firebase";
 
 export function UserNav() {
   const { profile } = useAppContext();
+  const { user } = useUser();
   const userAvatar = PlaceHolderImages.find(img => img.id === 'user-avatar');
 
   const getInitials = (name: string) => {
@@ -25,25 +27,29 @@ export function UserNav() {
     if (names.length > 1) {
       return `${names[0][0]}${names[names.length - 1][0]}`;
     }
-    return names[0].substring(0, 2);
+    return name.substring(0, 2);
   }
+
+  const displayName = profile?.name || 'User';
+  const displayNiches = profile?.niches?.join(', ') || '...';
+  const avatarImage = user?.photoURL || userAvatar?.imageUrl;
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-8 w-8 rounded-full">
           <Avatar className="h-9 w-9">
-            <AvatarImage src={userAvatar?.imageUrl} alt={profile.name} data-ai-hint={userAvatar?.imageHint} />
-            <AvatarFallback>{getInitials(profile.name)}</AvatarFallback>
+            <AvatarImage src={avatarImage} alt={displayName} data-ai-hint={userAvatar?.imageHint} />
+            <AvatarFallback>{getInitials(displayName)}</AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56" align="end" forceMount>
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">{profile.name}</p>
+            <p className="text-sm font-medium leading-none">{displayName}</p>
             <p className="text-xs leading-none text-muted-foreground">
-              {profile.niches.join(', ')}
+              {displayNiches}
             </p>
           </div>
         </DropdownMenuLabel>

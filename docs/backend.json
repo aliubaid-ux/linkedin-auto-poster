@@ -22,9 +22,77 @@
           "type": "string",
           "format": "uri",
           "description": "URL of the user's profile picture."
+        },
+        "niches": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "tone": {
+          "type": "string"
+        },
+        "postingMode": {
+          "type": "string",
+          "enum": ["auto", "manual"]
+        },
+        "preferredTimeUTC": {
+          "type": "string"
+        },
+        "linkedinConnected": {
+          "type": "boolean"
         }
       },
-      "required": ["uid", "email"]
+      "required": ["uid"]
+    },
+    "draftPost": {
+      "title": "Draft Post",
+      "description": "A generated LinkedIn post draft.",
+      "type": "object",
+      "properties": {
+        "source": { "type": "string" },
+        "topic": { "type": "string" },
+        "raw_generation": { "type": "string" },
+        "optimized_text": { "type": "string" },
+        "optimized_meta": {
+          "type": "object",
+          "properties": {
+            "hooks": { "type": "array", "items": { "type": "string" } },
+            "emotional_score": { "type": "number" },
+            "engagement_prediction": { "type": "number" },
+            "tone_score": { "type": "number" },
+            "tone_adjustments": { "type": "array", "items": { "type": "string" } }
+          }
+        },
+        "status": { "type": "string", "enum": ["draft", "scheduled", "posted", "failed"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "postedAt": { "type": ["string", "null"], "format": "date-time" },
+        "linkedinPostId": { "type": ["string", "null"] }
+      }
+    },
+    "learnedTone": {
+      "title": "Learned Tone",
+      "description": "The user's learned tone profile.",
+      "type": "object",
+      "properties": {
+        "avg_length": { "type": "number" },
+        "preferred_hooks": { "type": "array", "items": { "type": "string" } },
+        "sentence_complexity": { "type": "number" },
+        "emojiUsage": { "type": "number" }
+      }
+    },
+    "logEntry": {
+      "title": "Log Entry",
+      "description": "An entry for an automation run.",
+      "type": "object",
+      "properties": {
+        "timestamp": { "type": "string", "format": "date-time" },
+        "runId": { "type": "string" },
+        "status": { "type": "string", "enum": ["success", "partial", "failed"] },
+        "generatedCount": { "type": "number" },
+        "postedCount": { "type": "number" },
+        "errors": { "type": "array", "items": { "type": "string" } }
+      }
     }
   },
   "auth": {
@@ -36,6 +104,24 @@
         "$ref": "#/entities/user"
       },
       "description": "Stores user profile information."
+    },
+    "/users/{userId}/drafts/{draftId}": {
+      "schema": {
+        "$ref": "#/entities/draftPost"
+      },
+      "description": "Stores individual post drafts for a user."
+    },
+    "/users/{userId}/learnedTone/default": {
+      "schema": {
+        "$ref": "#/entities/learnedTone"
+      },
+      "description": "Stores the learned tone profile for a user."
+    },
+    "/users/{userId}/logs/{logId}": {
+      "schema": {
+        "$ref": "#/entities/logEntry"
+      },
+      "description": "Stores automation logs for a user."
     }
   }
 }
