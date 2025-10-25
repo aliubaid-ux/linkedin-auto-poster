@@ -29,9 +29,11 @@ export default function ConnectPage() {
     
     if (loading || !profile) {
         return (
-            <div className="mx-auto grid w-full max-w-2xl gap-2">
-                <h1 className="text-3xl font-semibold">Connections</h1>
-                <p className="text-muted-foreground">Manage your social media connections.</p>
+            <div className="mx-auto grid w-full max-w-4xl gap-4">
+                <div className="space-y-2">
+                    <h1 className="text-3xl font-semibold">Connections</h1>
+                    <p className="text-muted-foreground">Manage your social media connections.</p>
+                </div>
                 <Card className="mt-4">
                     <CardHeader>
                         <Skeleton className="h-8 w-1/3" />
@@ -46,20 +48,28 @@ export default function ConnectPage() {
     }
 
     return (
-        <div className="mx-auto grid w-full max-w-2xl gap-2">
-            <h1 className="text-3xl font-semibold">Connections</h1>
-            <p className="text-muted-foreground">Manage your social media connections.</p>
+        <div className="mx-auto grid w-full max-w-4xl gap-4">
+            <div className="space-y-2">
+                <h1 className="text-3xl font-semibold">Connections</h1>
+                <p className="text-muted-foreground">Manage your social media connections.</p>
+            </div>
             
             <Card className="mt-4">
-                <CardHeader className="flex flex-row items-center justify-between">
+                <CardHeader className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                     <div className="space-y-1.5">
                         <CardTitle>LinkedIn</CardTitle>
                         <CardDescription>Connect your LinkedIn account to enable automated posting.</CardDescription>
                     </div>
                     {profile.linkedinConnected ? (
-                        <CheckCircle className="h-8 w-8 text-green-500" />
+                        <div className="flex items-center gap-2 text-green-500">
+                           <CheckCircle className="h-6 w-6" />
+                           <span className="font-medium">Connected</span>
+                        </div>
                     ) : (
-                        <XCircle className="h-8 w-8 text-destructive" />
+                        <div className="flex items-center gap-2 text-destructive">
+                           <XCircle className="h-6 w-6" />
+                           <span className="font-medium">Not Connected</span>
+                        </div>
                     )}
                 </CardHeader>
                 <CardContent>
