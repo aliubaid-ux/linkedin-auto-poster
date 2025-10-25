@@ -1,6 +1,7 @@
 'use client';
 
 import { createContext, useContext, ReactNode, useEffect } from 'react';
+import { useRouter, usePathname } from 'next/navigation';
 import { useSupabaseUser } from '@/supabase/use-user';
 import { useCollection } from '@/supabase/use-collection';
 import { useDoc } from '@/supabase/use-doc';
@@ -26,13 +27,21 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 export function AppProvider({ children }: { children: ReactNode }) {
   const { user, loading: userLoading } = useSupabaseUser();
   const userId = user?.id;
+  const router = useRouter();
+  const pathname = usePathname();
+
+  useEffect(() => {
+    if (!userLoading && !user && pathname !== '/login') {
+      router.push('/login');
+    }
+  }, [user, userLoading, router, pathname]);
 
   const { data: profileData, loading: profileLoading } = useDoc<Profile>(
-    'profiles', 
+    'profiles',
     userId
   );
   const { data: draftsData, loading: draftsLoading } = useCollection<DraftPost>(
-    'drafts', 
+    'drafts',
     userId
   );
   const { data: learnedToneData, loading: learnedToneLoading } = useDoc<LearnedTone>(
@@ -40,7 +49,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     userId
   );
   const { data: logsData, loading: logsLoading } = useCollection<LogEntry>(
-    'logs', 
+    'logs',
     userId
   );
 

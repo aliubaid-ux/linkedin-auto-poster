@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
-} from "@/components/ui/sidebar";
+} from '@/components/ui/sidebar';
 import {
   LayoutDashboard,
   User,
@@ -14,15 +14,15 @@ import {
   History,
   Plug,
   Settings,
-} from "lucide-react";
+} from 'lucide-react';
 
 const navItems = [
-  { href: "/", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/drafts", label: "Drafts", icon: FileText },
-  { href: "/profile", label: "Profile", icon: User },
-  { href: "/connect", label: "Connections", icon: Plug },
-  { href: "/logs", label: "Logs", icon: History },
-  { href: "/settings", label: "Settings", icon: Settings },
+  { href: '/', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/drafts', label: 'Drafts', icon: FileText },
+  { href: '/profile', label: 'Profile', icon: User },
+  { href: '/connect', label: 'Connections', icon: Plug },
+  { href: '/logs', label: 'Logs', icon: History },
+  { href: '/settings', label: 'Settings', icon: Settings },
 ];
 
 export function MainNav() {
@@ -35,7 +35,7 @@ export function MainNav() {
           <SidebarMenuButton
             asChild
             isActive={pathname === item.href}
-            tooltip={{ children: item.label, side: "right", align: "center" }}
+            tooltip={{ children: item.label, side: 'right', align: 'center' }}
           >
             <Link href={item.href}>
               <item.icon />

@@ -42,8 +42,8 @@ export default function RootLayout({
       <body className="font-body antialiased">
         <AppProvider>
           <SidebarProvider>
-            <div className="min-h-screen">
-              <Sidebar>
+            <div className="flex min-h-screen">
+              <Sidebar collapsible="icon">
                 <SidebarHeader>
                   <Link href="/" className="flex items-center gap-2">
                     <Logo className="w-6 h-6 text-primary" />
@@ -57,7 +57,7 @@ export default function RootLayout({
                   {/* Footer content if any */}
                 </SidebarFooter>
               </Sidebar>
-              <SidebarInset>
+              <div className="flex-1 flex flex-col">
                 <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
                   <SidebarTrigger className="md:hidden" />
                   <div className="relative ml-auto flex-1 md:grow-0">
@@ -81,7 +81,7 @@ export default function RootLayout({
                 <main className="flex flex-1 flex-col gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
                   {children}
                 </main>
-              </SidebarInset>
+              </div>
             </div>
             <Toaster />
           </SidebarProvider>
