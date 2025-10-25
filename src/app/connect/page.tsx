@@ -1,95 +1,77 @@
-"use client";
+'use client';
 
-import { useAppContext } from "@/context/app-provider";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { CheckCircle, XCircle, LogIn } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils";
+import { LinkedInIcon } from "@/components/icons";
+import { Check, X } from 'lucide-react';
 
 export default function ConnectPage() {
-    const { profile, setProfile, loading } = useAppContext();
     const { toast } = useToast();
+    // Mock connection status
+    const isConnected = false;
 
     const handleConnect = () => {
-        if (!profile) return;
-        // Mocking the OAuth flow
-        toast({ title: "Redirecting to LinkedIn..." });
+        toast({ title: "Connecting to LinkedIn..." });
+        // Simulate API call
         setTimeout(() => {
-            setProfile({ ...profile, linkedinConnected: true });
             toast({ title: "Successfully connected to LinkedIn!" });
         }, 2000);
     };
 
     const handleDisconnect = () => {
-        if (!profile) return;
-        setProfile({ ...profile, linkedinConnected: false });
-        toast({ title: "Disconnected from LinkedIn.", variant: "destructive" });
+        toast({ title: "Disconnecting from LinkedIn...", variant: "destructive" });
+         // Simulate API call
+        setTimeout(() => {
+            toast({ title: "Successfully disconnected from LinkedIn." });
+        }, 2000);
     };
-    
-    if (loading || !profile) {
-        return (
-            <div className="mx-auto grid w-full max-w-4xl gap-4">
-                <div className="space-y-2">
-                    <h1 className="text-3xl font-semibold">Connections</h1>
-                    <p className="text-muted-foreground">Manage your social media connections.</p>
-                </div>
-                <Card className="mt-4">
-                    <CardHeader>
-                        <Skeleton className="h-8 w-1/3" />
-                        <Skeleton className="h-4 w-2/3" />
-                    </CardHeader>
-                    <CardContent>
-                         <Skeleton className="h-10 w-40" />
-                    </CardContent>
-                </Card>
-            </div>
-        )
-    }
+
 
     return (
-        <div className="mx-auto grid w-full max-w-4xl gap-4">
-            <div className="space-y-2">
-                <h1 className="text-3xl font-semibold">Connections</h1>
-                <p className="text-muted-foreground">Manage your social media connections.</p>
+        <div className="grid gap-6">
+        <Card className="flex flex-col">
+          <CardHeader>
+            <CardTitle>Connections</CardTitle>
+            <CardDescription>Connect your social accounts to automate your workflow.</CardDescription>
+          </CardHeader>
+        </Card>
+        <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div className="flex items-center gap-4">
+            <LinkedInIcon className="h-8 w-8" />
+            <div className="grid gap-1.5">
+              <h3 className="text-lg font-semibold">LinkedIn</h3>
+              <p className="text-sm text-muted-foreground">Automate your posts and grow your network.</p>
             </div>
-            
-            <Card className="mt-4">
-                <CardHeader className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                    <div className="space-y-1.5">
-                        <CardTitle>LinkedIn</CardTitle>
-                        <CardDescription>Connect your LinkedIn account to enable automated posting.</CardDescription>
-                    </div>
-                    {profile.linkedinConnected ? (
-                        <div className="flex items-center gap-2 text-green-500">
-                           <CheckCircle className="h-6 w-6" />
-                           <span className="font-medium">Connected</span>
-                        </div>
-                    ) : (
-                        <div className="flex items-center gap-2 text-destructive">
-                           <XCircle className="h-6 w-6" />
-                           <span className="font-medium">Not Connected</span>
-                        </div>
-                    )}
-                </CardHeader>
-                <CardContent>
-                    {profile.linkedinConnected ? (
-                        <div className="flex flex-col items-start gap-4">
-                            <p>Your account is connected and ready to post.</p>
-                            <Button variant="destructive" onClick={handleDisconnect}>
-                                Disconnect
-                            </Button>
-                        </div>
-                    ) : (
-                        <div className="flex flex-col items-start gap-4">
-                            <p>Your account is not connected. Please connect to continue.</p>
-                            <Button onClick={handleConnect}>
-                                <LogIn className="mr-2 h-4 w-4" /> Connect to LinkedIn
-                            </Button>
-                        </div>
-                    )}
-                </CardContent>
-            </Card>
-        </div>
+          </div>
+          <div className={cn(
+            "flex items-center gap-2 rounded-md px-3 py-1 text-sm font-medium",
+            isConnected ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800",
+          )}>
+            {isConnected ? <Check className="h-4 w-4" /> : <X className="h-4 w-4" />}
+            {isConnected ? "Connected" : "Not Connected"}
+          </div>
+        </CardHeader>
+        <CardContent>
+          {isConnected ? (
+            <div className="flex flex-col items-start gap-4">
+                <p>Your account is connected and ready to post.</p>
+                <Button variant="destructive" onClick={handleDisconnect}>
+                    Disconnect
+                </Button>
+            </div>
+           ) : (
+            <div className="flex flex-col items-start gap-4">
+                <p>Your account is not connected. Please connect to continue.</p>
+                 <Button onClick={handleConnect} >
+                    <LinkedInIcon className="mr-2 h-4 w-4" /> Connect with LinkedIn
+                </Button>
+            </div>
+           )}
+        </CardContent>
+      </Card>
+      </div>
     );
 }
