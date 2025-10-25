@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 import './globals.css';
-import { AppProvider } from '@/context/app-provider';
 import { Toaster } from '@/components/ui/toaster';
 import {
   SidebarProvider,
@@ -18,6 +17,7 @@ import { UserNav } from '@/components/user-nav';
 import { Logo } from '@/components/icons';
 import { Bell, Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import { FirebaseClientProvider } from '@/firebase/client-provider';
 
 export const metadata: Metadata = {
   title: 'LinkFlow AI',
@@ -40,7 +40,7 @@ export default function RootLayout({
         />
       </head>
       <body className="font-body antialiased">
-        <AppProvider>
+        <FirebaseClientProvider>
           <SidebarProvider>
             <div className="min-h-screen">
               <Sidebar>
@@ -85,7 +85,7 @@ export default function RootLayout({
             </div>
             <Toaster />
           </SidebarProvider>
-        </AppProvider>
+        </FirebaseClientProvider>
       </body>
     </html>
   );

@@ -1,7 +1,7 @@
 import type {NextConfig} from 'next';
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  // Restarting to load env variables
   typescript: {
     ignoreBuildErrors: true,
   },
