@@ -15,11 +15,11 @@ import {
 import { useAppContext } from "@/context/app-provider";
 import Link from 'next/link';
 import { PlaceHolderImages } from "@/lib/placeholder-images";
-import { useUser } from "@/firebase";
+import { useSupabaseUser } from "@/supabase/use-user";
 
 export function UserNav() {
   const { profile } = useAppContext();
-  const { user } = useUser();
+  const { user } = useSupabaseUser();
   const userAvatar = PlaceHolderImages.find(img => img.id === 'user-avatar');
 
   const getInitials = (name: string) => {
@@ -32,7 +32,7 @@ export function UserNav() {
 
   const displayName = profile?.name || 'User';
   const displayNiches = profile?.niches?.join(', ') || '...';
-  const avatarImage = user?.photoURL || userAvatar?.imageUrl;
+  const avatarImage = user?.user_metadata.avatar_url || userAvatar?.imageUrl;
 
   return (
     <DropdownMenu>
