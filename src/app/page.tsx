@@ -46,6 +46,7 @@ import {
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { ClientOnly } from "@/components/client-only";
 
 const formSchema = z.object({
   topic: z.string().min(10, {
@@ -267,7 +268,7 @@ export default function DashboardPage() {
                 <div className="flex items-center gap-2">
                    <Badge variant={draft.status === 'posted' ? 'default' : 'secondary'}>{draft.status}</Badge>
                   <span className="text-xs text-muted-foreground">
-                    {new Date(draft.createdAt).toLocaleDateString()}
+                    <ClientOnly>{new Date(draft.createdAt).toLocaleDateString()}</ClientOnly>
                   </span>
                   <Button variant="ghost" size="icon" className="ml-auto h-7 w-7" onClick={() => copyToClipboard(draft.optimized_text)}>
                     <ClipboardCopy className="h-4 w-4" />

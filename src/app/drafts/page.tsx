@@ -35,6 +35,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import type { DraftPost } from "@/lib/types";
+import { ClientOnly } from "@/components/client-only";
 
 function DraftCard({ draft }: { draft: DraftPost }) {
   const { toast } = useToast();
@@ -63,11 +64,11 @@ function DraftCard({ draft }: { draft: DraftPost }) {
       <CardHeader>
         <CardTitle className="text-lg">{draft.topic}</CardTitle>
         <CardDescription>
-          Generated on {new Date(draft.createdAt).toLocaleDateString()} from {draft.source}
+          Generated on <ClientOnly>{new Date(draft.createdAt).toLocaleDateString()}</ClientOnly> from {draft.source}
         </CardDescription>
         <div className="flex items-center gap-2 pt-2">
             <Badge variant={draft.status === 'posted' ? 'default' : 'secondary'}>{draft.status}</Badge>
-            {draft.postedAt && <span className="text-xs text-muted-foreground">Posted on {new Date(draft.postedAt).toLocaleDateString()}</span>}
+            {draft.postedAt && <span className="text-xs text-muted-foreground">Posted on <ClientOnly>{new Date(draft.postedAt).toLocaleDateString()}</ClientOnly></span>}
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
