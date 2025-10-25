@@ -100,8 +100,7 @@ export default function DashboardPage() {
         learnedToneJson: JSON.stringify(learnedTone),
       });
 
-      const newDraft: DraftPost = {
-        id: `draft_${Date.now()}`,
+      const newDraft: Omit<DraftPost, 'id' | 'createdAt' | 'user_id'> = {
         source: "manual",
         topic: values.topic,
         raw_generation: generationResult.linkedinPost,
@@ -116,12 +115,11 @@ export default function DashboardPage() {
           tone_adjustments: adaptationResult.adjustments,
         },
         status: "draft",
-        createdAt: new Date().toISOString(),
         postedAt: null,
         linkedinPostId: null,
       };
 
-      addDraft(newDraft);
+      await addDraft(newDraft);
       form.reset();
       toast({
         title: "Post generated!",

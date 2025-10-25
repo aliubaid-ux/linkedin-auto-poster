@@ -1,12 +1,10 @@
-"use client";
+'use client';
 
 import { createContext, useContext, ReactNode, useEffect } from 'react';
-import { signInAnonymously } from 'firebase/auth';
-
-import { useUser } from '@/firebase/auth/use-user';
-import { useAuth } from '@/firebase/auth/use-auth';
-import { useCollection } from '@/firebase/firestore/use-collection';
-import { useDoc } from '@/firebase/firestore/use-doc';
+import { useSupabaseUser } from '@/supabase/use-user';
+import { useCollection } from '@/supabase/use-collection';
+import { useDoc } from '@/supabase/use-doc';
+import { supabase } from '@/supabase/client';
 
 import type { Profile, DraftPost, LearnedTone, LogEntry } from '@/lib/types';
 import { initialProfile, initialLearnedTone, initialLogs } from '@/lib/data';
@@ -17,47 +15,58 @@ interface AppContextType {
   learnedTone: LearnedTone | null;
   logs: LogEntry[];
   loading: boolean;
-  // Dummy functions for now, will be implemented with firestore writes
-  setProfile: (profile: Profile) => void;
-  addDraft: (draft: DraftPost) => void;
-  updateDraft: (updatedDraft: DraftPost) => void;
-  addLog: (log: LogEntry) => void;
+  setProfile: (profile: Profile) => Promise<void>;
+  addDraft: (draft: Omit<DraftPost, 'id' | 'createdAt' | 'user_id'>) => Promise<void>;
+  updateDraft: (updatedDraft: DraftPost) => Promise<void>;
+  addLog: (log: Omit<LogEntry, 'id' | 'createdAt' | 'user_id'>) => Promise<void>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export function AppProvider({ children }: { children: ReactNode }) {
-  const auth = useAuth();
-  const { user, loading: userLoading } = useUser();
-
-  useEffect(() => {
-    if (!user && auth) {
-      signInAnonymously(auth).catch((error) => {
-        console.error("Anonymous sign-in error:", error);
-      });
-    }
-  }, [user, auth]);
-
-  const userId = user?.uid;
+  const { user, loading: userLoading } = useSupabaseUser();
+  const userId = user?.id;
 
   const { data: profileData, loading: profileLoading } = useDoc<Profile>(
-    userId ? `/users/${userId}` : ''
+    'profiles', 
+    userId
   );
   const { data: draftsData, loading: draftsLoading } = useCollection<DraftPost>(
-    userId ? `/users/${userId}/drafts` : ''
+    'drafts', 
+    userId
   );
   const { data: learnedToneData, loading: learnedToneLoading } = useDoc<LearnedTone>(
-     userId ? `/users/${userId}/learnedTone/default` : ''
+    'learned_tones',
+    userId
   );
   const { data: logsData, loading: logsLoading } = useCollection<LogEntry>(
-     userId ? `/users/${userId}/logs` : ''
+    'logs', 
+    userId
   );
-  
-  // Dummy functions, to be replaced
-  const setProfile = (profile: Profile) => console.log("setProfile", profile);
-  const addDraft = (draft: DraftPost) => console.log("addDraft", draft);
-  const updateDraft = (updatedDraft: DraftPost) => console.log("updateDraft", updatedDraft);
-  const addLog = (log: LogEntry) => console.log("addLog", log);
+
+  async function setProfile(profile: Profile) {
+    if (!userId) return;
+    const { error } = await supabase.from('profiles').upsert({ ...profile, user_id: userId });
+    if (error) console.error('Error setting profile:', error);
+  }
+
+  async function addDraft(draft: Omit<DraftPost, 'id' | 'createdAt' | 'user_id'>) {
+    if (!userId) return;
+    const { error } = await supabase.from('drafts').insert({ ...draft, user_id: userId });
+    if (error) console.error('Error adding draft:', error);
+  }
+
+  async function updateDraft(updatedDraft: DraftPost) {
+    if (!userId) return;
+    const { error } = await supabase.from('drafts').update(updatedDraft).eq('id', updatedDraft.id);
+    if (error) console.error('Error updating draft:', error);
+  }
+
+  async function addLog(log: Omit<LogEntry, 'id' | 'createdAt' | 'user_id'>) {
+    if (!userId) return;
+    const { error } = await supabase.from('logs').insert({ ...log, user_id: userId });
+    if (error) console.error('Error adding log:', error);
+  }
 
   const value = {
     profile: profileData || initialProfile,
