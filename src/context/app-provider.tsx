@@ -2,7 +2,7 @@
 
 import { createContext, useContext, ReactNode, useEffect, useState, useCallback } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { supabase } from '@/supabase/client';
+import { createClient } from '@/lib/supabase-client';
 import type { User } from '@supabase/supabase-js';
 
 import type { Profile, DraftPost, LearnedTone, LogEntry } from '@/lib/types';
@@ -18,6 +18,7 @@ interface AppContextType {
   addDraft: (draft: Omit<DraftPost, 'id' | 'createdAt' | 'user_id'>) => Promise<void>;
   updateDraft: (updatedDraft: DraftPost) => Promise<void>;
   addLog: (log: Omit<LogEntry, 'id' | 'createdAt' | 'user_id'>) => Promise<void>;
+  setDrafts: React.Dispatch<React.SetStateAction<DraftPost[]>>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -29,6 +30,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [learnedTone, setLearnedTone] = useState<LearnedTone | null>(null);
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const supabase = createClient();
 
   const router = useRouter();
   const pathname = usePathname();
@@ -52,16 +54,40 @@ export function AppProvider({ children }: { children: ReactNode }) {
           fetchLogs
       ]);
 
-      setProfile(profileResult.data || initialProfile);
+      if (profileResult.data) {
+        setProfile(profileResult.data);
+      } else if (profileResult.error && profileResult.error.code === 'PGRST116') { // No profile found
+        const { data: newProfile, error: insertError } = await supabase
+            .from('profiles')
+            .insert({ ...initialProfile, user_id: currentUser.id })
+            .select()
+            .single();
+        if (insertError) console.error('Error creating initial profile:', insertError);
+        else setProfile(newProfile);
+      }
+
       setDrafts(draftsResult.data || []);
-      setLearnedTone(learnedToneResult.data || initialLearnedTone);
+
+       if (learnedToneResult.data) {
+        setLearnedTone(learnedToneResult.data);
+      } else if (learnedToneResult.error && learnedToneResult.error.code === 'PGRST116') {
+        const { data: newTone, error: insertError } = await supabase
+            .from('learned_tones')
+            .insert({ ...initialLearnedTone, user_id: currentUser.id })
+            .select()
+            .single();
+        if (insertError) console.error('Error creating initial learned tone:', insertError);
+        else setLearnedTone(newTone);
+      }
+
       setLogs(logsResult.data || []);
+
     } catch (error) {
       console.error("Error loading initial data:", error);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [supabase]);
 
   useEffect(() => {
     const { data: authListener } = supabase.auth.onAuthStateChange(
@@ -87,42 +113,22 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return () => {
       authListener.subscription.unsubscribe();
     };
-  }, [pathname, router, loadInitialData]);
+  }, [pathname, router, loadInitialData, supabase]);
 
   useEffect(() => {
     if (user) {
-      const draftsChannel = supabase.channel('public:drafts').on(
+      const channel = supabase.channel('public-changes').on(
         'postgres_changes',
-        { event: '*', schema: 'public', table: 'drafts', filter: `user_id=eq.${user.id}` },
+        { event: '*', schema: 'public', filter: `user_id=eq.${user.id}` },
         () => loadInitialData(user)
       ).subscribe();
-
-      const profilesChannel = supabase.channel('public:profiles').on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'profiles', filter: `user_id=eq.${user.id}` },
-        () => loadInitialData(user)
-      ).subscribe();
-
-      const tonesChannel = supabase.channel('public:learned_tones').on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'learned_tones', filter: `user_id=eq.${user.id}` },
-        () => loadInitialData(user)
-      ).subscribe();
-
-      const logsChannel = supabase.channel('public:logs').on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'logs', filter: `user_id=eq.${user.id}` },
-        () => loadInitialData(user)
-      ).subscribe();
-
+      
       return () => {
-        supabase.removeChannel(draftsChannel);
-        supabase.removeChannel(profilesChannel);
-        supabase.removeChannel(tonesChannel);
-        supabase.removeChannel(logsChannel);
+        supabase.removeChannel(channel);
       };
     }
-  }, [user, loadInitialData]);
+  }, [user, loadInitialData, supabase]);
+
 
   async function updateProfile(newProfile: Profile) {
     if (!user) return;
@@ -166,6 +172,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     addDraft,
     updateDraft,
     addLog,
+    setDrafts,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
