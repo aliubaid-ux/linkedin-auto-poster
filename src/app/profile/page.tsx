@@ -46,7 +46,7 @@ const profileFormSchema = z.object({
 type ProfileFormValues = z.infer<typeof profileFormSchema>;
 
 export default function ProfilePage() {
-  const { profile, setProfile, loading } = useAppContext();
+  const { profile, updateProfile, loading } = useAppContext();
   const { toast } = useToast();
 
   const form = useForm<ProfileFormValues>({
@@ -80,12 +80,12 @@ export default function ProfilePage() {
 
   function onSubmit(data: ProfileFormValues) {
     if (!profile) return;
-    const updatedProfile = {
+    const updatedProfileData = {
       ...profile,
       ...data,
       niches: data.niches.map(n => n.value),
     };
-    setProfile(updatedProfile);
+    updateProfile(updatedProfileData);
     toast({
       title: "Profile updated",
       description: "Your settings have been saved successfully.",
