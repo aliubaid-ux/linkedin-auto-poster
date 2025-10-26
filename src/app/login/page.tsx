@@ -5,10 +5,11 @@ import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { useSupabaseUser } from '@/supabase/use-user';
+import { AuthSessionMissingError } from '@supabase/supabase-js';
 
 export default function LoginPage() {
   const router = useRouter();
-  const { user, loading } = useSupabaseUser();
+  const { user, loading, error } = useSupabaseUser();
   const supabase = createClient();
 
   useEffect(() => {
@@ -26,7 +27,11 @@ export default function LoginPage() {
     });
   };
 
-  if (loading || user) {
+  // Ignore the initial session missing error, as it's expected on the login page.
+  const shouldShowLoading = loading || (user && !error) || (error && !(error instanceof AuthSessionMissingError));
+
+
+  if (shouldShowLoading) {
     return (
         <div className="flex items-center justify-center h-screen bg-background">
             <p>Loading...</p>
