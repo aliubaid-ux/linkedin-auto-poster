@@ -6,9 +6,9 @@ import { Button } from '@/components/ui/button';
 export default function LoginPage() {
   const handleLogin = async () => {
     await supabase.auth.signInWithOAuth({
-      provider: 'linkedin',
+      provider: 'linkedin_oidc',
       options: {
-        redirectTo: window.location.origin,
+        redirectTo: `${window.location.origin}/auth/callback`,
       },
     });
   };
