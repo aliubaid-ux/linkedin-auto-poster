@@ -1,28 +1,38 @@
 'use client';
 
-import { supabase } from '@/supabase/client';
+import { createClient } from '@/lib/supabase-client';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
+import { useSupabaseUser } from '@/supabase/use-user';
 
 export default function LoginPage() {
   const router = useRouter();
+  const { user, loading } = useSupabaseUser();
+  const supabase = createClient();
 
   useEffect(() => {
-    const checkUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        router.push('/');
-      }
-    };
-    checkUser();
-  }, [router]);
+    if (!loading && user) {
+      router.push('/');
+    }
+  }, [user, loading, router]);
 
   const handleLogin = async () => {
     await supabase.auth.signInWithOAuth({
       provider: 'linkedin_oidc',
+      options: {
+        redirectTo: `${location.origin}/auth/callback`,
+      },
     });
   };
+
+  if (loading || user) {
+    return (
+        <div className="flex items-center justify-center h-screen bg-background">
+            <p>Loading...</p>
+        </div>
+    )
+  }
 
   return (
     <div className="flex items-center justify-center h-screen bg-background">
