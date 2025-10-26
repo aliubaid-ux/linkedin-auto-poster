@@ -3,20 +3,45 @@
 import { createClient } from '@/lib/supabase-client';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
-import { useSupabaseUser } from '@/supabase/use-user';
-import { AuthSessionMissingError } from '@supabase/supabase-js';
+import { useEffect, useState } from 'react';
+import type { User } from '@supabase/supabase-js';
 
 export default function LoginPage() {
   const router = useRouter();
-  const { user, loading, error } = useSupabaseUser();
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
   const supabase = createClient();
 
   useEffect(() => {
-    if (!loading && user) {
-      router.push('/');
-    }
-  }, [user, loading, router]);
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        const currentUser = session?.user ?? null;
+        setUser(currentUser);
+        setLoading(false);
+        if (currentUser) {
+          router.push('/');
+        }
+      }
+    );
+  
+    // Check initial session
+    const getInitialUser = async () => {
+        const { data: { session } } = await supabase.auth.getSession();
+        const currentUser = session?.user ?? null;
+        setUser(currentUser);
+        setLoading(false);
+        if (currentUser) {
+            router.push('/');
+        }
+    };
+    getInitialUser();
+
+
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
+  }, [router, supabase.auth]);
+
 
   const handleLogin = async () => {
     await supabase.auth.signInWithOAuth({
@@ -27,11 +52,7 @@ export default function LoginPage() {
     });
   };
 
-  // Ignore the initial session missing error, as it's expected on the login page.
-  const shouldShowLoading = loading || (user && !error) || (error && !(error instanceof AuthSessionMissingError));
-
-
-  if (shouldShowLoading) {
+  if (loading) {
     return (
         <div className="flex items-center justify-center h-screen bg-background">
             <p>Loading...</p>
