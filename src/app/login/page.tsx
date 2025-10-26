@@ -21,6 +21,9 @@ export default function LoginPage() {
   const handleLogin = async () => {
     await supabase.auth.signInWithOAuth({
       provider: 'linkedin_oidc',
+      options: {
+        redirectTo: `${location.origin}/auth/callback`,
+      },
     });
   };
 
