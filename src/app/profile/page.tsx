@@ -86,9 +86,9 @@ function ProfileForm() {
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Display Name</FormLabel>
+                  <FormLabel htmlFor="name">Display Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g., Ali Ubaid" {...field} />
+                    <Input id="name" placeholder="e.g., Ali Ubaid" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -96,7 +96,7 @@ function ProfileForm() {
             />
 
             <FormItem>
-              <FormLabel>Niches</FormLabel>
+              <FormLabel htmlFor="niches">Niches</FormLabel>
               <FormDescription>
                 Add tags that define your areas of expertise.
               </FormDescription>
@@ -110,7 +110,7 @@ function ProfileForm() {
                       <FormItem>
                         <div className="flex items-center gap-2">
                           <FormControl>
-                            <Input {...field} placeholder="e.g., AI" />
+                            <Input {...field} id={`niches.${index}.value`} placeholder="e.g., AI" />
                           </FormControl>
                           <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)}>
                             <X className="h-4 w-4" />
@@ -148,10 +148,10 @@ function ProfileForm() {
               name="tone"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Tone of Voice</FormLabel>
+                  <FormLabel htmlFor="tone">Tone of Voice</FormLabel>
                   <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
-                      <SelectTrigger>
+                      <SelectTrigger id="tone">
                         <SelectValue placeholder="Select a tone" />
                       </SelectTrigger>
                     </FormControl>
@@ -172,26 +172,27 @@ function ProfileForm() {
               name="posting_mode"
               render={({ field }) => (
                 <FormItem className="space-y-3">
-                  <FormLabel>Posting Mode</FormLabel>
+                  <FormLabel htmlFor="posting_mode">Posting Mode</FormLabel>
                   <FormControl>
                     <RadioGroup
                       onValueChange={field.onChange}
                       value={field.value}
                       className="flex flex-col space-y-1"
+					  id="posting_mode"
                     >
                       <FormItem className="flex items-center space-x-3 space-y-0">
                         <FormControl>
-                          <RadioGroupItem value="manual" />
+                          <RadioGroupItem value="manual" id="manual"/>
                         </FormControl>
-                        <FormLabel className="font-normal">
+                        <FormLabel htmlFor="manual" className="font-normal">
                           Manual: Review and post drafts yourself.
                         </FormLabel>
                       </FormItem>
                       <FormItem className="flex items-center space-x-3 space-y-0">
                         <FormControl>
-                          <RadioGroupItem value="auto" />
+                          <RadioGroupItem value="auto" id="auto" />
                         </FormControl>
-                        <FormLabel className="font-normal">
+                        <FormLabel htmlFor="auto" className="font-normal">
                           Auto: Posts are published automatically.
                         </FormLabel>
                       </FormItem>
@@ -206,9 +207,9 @@ function ProfileForm() {
               name="preferred_time_utc"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Preferred Posting Time (UTC)</FormLabel>
+                  <FormLabel htmlFor="preferred_time_utc">Preferred Posting Time (UTC)</FormLabel>
                   <FormControl>
-                    <Input placeholder="10:00" {...field} />
+                    <Input id="preferred_time_utc" placeholder="10:00" {...field} />
                   </FormControl>
                   <FormDescription>
                     The target time for automated posts.
