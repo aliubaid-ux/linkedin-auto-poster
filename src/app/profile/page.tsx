@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { useEffect } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useToast } from "@/hooks/use-toast";
-import { X } from "lucide-react";
+import { X, Loader2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Profile } from "@/lib/types";
 
@@ -28,7 +28,6 @@ type ProfileFormValues = z.infer<typeof profileFormSchema>;
 
 function ProfileForm() {
   const { profile, updateProfile } = useAppContext();
-  const { toast } = useToast();
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
@@ -58,18 +57,14 @@ function ProfileForm() {
     control: form.control,
   });
 
-  function onSubmit(data: ProfileFormValues) {
+  async function onSubmit(data: ProfileFormValues) {
     if (!profile) return;
     const updatedProfileData: Profile = {
       ...profile,
       ...data,
       niches: data.niches ? data.niches.map(n => n.value) : [],
     };
-    updateProfile(updatedProfileData);
-    toast({
-      title: "Profile updated",
-      description: "Your settings have been saved successfully.",
-    });
+    await updateProfile(updatedProfileData);
   }
 
   return (
@@ -223,7 +218,13 @@ function ProfileForm() {
         </Card>
         
         <div className="flex justify-end">
-          <Button type="submit">Save Changes</Button>
+            <Button type="submit" disabled={form.formState.isSubmitting}>
+                {form.formState.isSubmitting ? (
+                    <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving...</>
+                ) : (
+                    "Save Changes"
+                )}
+            </Button>
         </div>
       </form>
     </Form>
