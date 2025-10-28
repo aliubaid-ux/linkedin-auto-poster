@@ -1,28 +1,25 @@
 'use client';
 
-import { createClient } from '@/lib/supabase-client';
-import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
+import { PostGenerator } from '@/components/post-generator';
+import { StatsCards } from '@/components/stats-cards';
+import { ActivityFeed } from '@/components/activity-feed';
 
 export default function Dashboard() {
-  const router = useRouter();
-  const supabase = createClient();
-
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    router.push('/login');
-  };
-
   return (
-    <div className="flex flex-col items-center justify-center h-screen bg-background">
-      <div className="text-center p-8 max-w-md w-full">
-        <h1 className="text-4xl font-bold mb-4 text-primary">Welcome to your Dashboard</h1>
-        <p className="text-muted-foreground mb-8">
-          You are successfully logged in.
-        </p>
-        <Button onClick={handleLogout} size="lg" className="w-full">
-          Logout
-        </Button>
+    <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
+      <div className="flex items-center justify-between space-y-2">
+        <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
+      </div>
+      <div className="space-y-4">
+        <StatsCards />
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+          <div className="lg:col-span-4">
+            <PostGenerator />
+          </div>
+          <div className="lg:col-span-3">
+             <ActivityFeed />
+          </div>
+        </div>
       </div>
     </div>
   );

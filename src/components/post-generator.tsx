@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { generateLinkedInPost } from "@/ai/flows/generate-linkedin-post";
 import { optimizeLinkedInPostForEngagement } from "@/ai/flows/optimize-linkedin-post-for-engagement";
 import { adaptPostToneToUserPreferences } from "@/ai/flows/adapt-post-tone-to-user-preferences";
@@ -18,6 +19,7 @@ import { Bot, Loader2 } from "lucide-react";
 
 const formSchema = z.object({
   topic: z.string().min(10, { message: "Topic must be at least 10 characters." }),
+  niche: z.string().min(1, { message: "Please select a niche." }),
 });
 
 export function PostGenerator() {
@@ -27,7 +29,7 @@ export function PostGenerator() {
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: { topic: "" },
+    defaultValues: { topic: "", niche: "" },
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
@@ -45,7 +47,7 @@ export function PostGenerator() {
     try {
       toast({ title: "Generating post...", description: "Your new post is being created by AI." });
 
-      const generationResult = await generateLinkedInPost({ topicSummary: values.topic, niche: profile.niches.join(", "), tone: profile.tone });
+      const generationResult = await generateLinkedInPost({ topicSummary: values.topic, niche: values.niche, tone: profile.tone });
       const optimizationResult = await optimizeLinkedInPostForEngagement({ initialDraft: generationResult.linkedinPost });
       const adaptationResult = await adaptPostToneToUserPreferences({ post: optimizationResult.optimizedText, learnedToneJson: JSON.stringify(learnedTone) });
 
@@ -86,6 +88,30 @@ export function PostGenerator() {
       <CardContent>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="niche"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Niche</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isLoading || !profile?.niches || profile.niches.length === 0}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a niche for this post" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {profile?.niches?.map((niche) => (
+                        <SelectItem key={niche} value={niche}>
+                          {niche}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             <FormField
               control={form.control}
               name="topic"
