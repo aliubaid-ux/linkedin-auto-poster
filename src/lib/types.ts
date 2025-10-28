@@ -1,4 +1,5 @@
 export interface Profile {
+  id?: string;
   name: string;
   niches: string[];
   tone: string;
@@ -9,6 +10,7 @@ export interface Profile {
 
 export interface DraftPost {
   id: string;
+  user_id?: string;
   source: string;
   topic: string;
   raw_generation: string;
@@ -27,14 +29,17 @@ export interface DraftPost {
 }
 
 export interface LearnedTone {
+  user_id?: string;
   avg_length: number;
   preferred_hooks: string[];
   sentence_complexity: number;
   emoji_usage: number;
+  created_at?: string;
 }
 
 export interface LogEntry {
   id: string;
+  user_id?: string;
   timestamp: string;
   run_id: string;
   status: 'success' | 'partial' | 'failed';

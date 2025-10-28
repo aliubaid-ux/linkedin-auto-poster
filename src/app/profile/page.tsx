@@ -19,8 +19,8 @@ const profileFormSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters."),
   niches: z.array(z.object({ value: z.string().min(1, "Niche cannot be empty.") })).optional(),
   tone: z.string(),
-  postingMode: z.enum(["auto", "manual"]),
-  preferredTimeUTC: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "Invalid time format (HH:mm)."),
+  posting_mode: z.enum(["auto", "manual"]),
+  preferred_time_utc: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "Invalid time format (HH:mm)."),
 });
 
 type ProfileFormValues = z.infer<typeof profileFormSchema>;
@@ -35,19 +35,20 @@ function ProfileForm() {
       name: '',
       niches: [],
       tone: 'Expert + Conversational',
-      postingMode: 'manual',
-      preferredTimeUTC: '10:00',
+      posting_mode: 'manual',
+      preferred_time_utc: '10:00',
     },
   });
 
   useEffect(() => {
     if (profile) {
+        console.log("Profile data:", profile);
       form.reset({
         name: profile.name,
         niches: profile.niches.map(n => ({ value: n })) || [],
         tone: profile.tone,
-        postingMode: profile.postingMode,
-        preferredTimeUTC: profile.preferredTimeUTC,
+        posting_mode: profile.posting_mode,
+        preferred_time_utc: profile.preferred_time_utc,
       });
     }
   }, [profile, form.reset]);
@@ -168,7 +169,7 @@ function ProfileForm() {
 
             <FormField
               control={form.control}
-              name="postingMode"
+              name="posting_mode"
               render={({ field }) => (
                 <FormItem className="space-y-3">
                   <FormLabel>Posting Mode</FormLabel>
@@ -202,7 +203,7 @@ function ProfileForm() {
             />
             <FormField
               control={form.control}
-              name="preferredTimeUTC"
+              name="preferred_time_utc"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Preferred Posting Time (UTC)</FormLabel>
@@ -260,7 +261,7 @@ export default function ProfilePage() {
                          <CardDescription>
                             Define the voice and automation level for your posts.
                         </CardDescription>
-                    </CardHeader>
+                    </Header>
                     <CardContent className="space-y-4">
                         <Skeleton className="h-10 w-1/2" />
                         <Skeleton className="h-20 w-full" />
