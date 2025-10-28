@@ -4,21 +4,37 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/com
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ClipboardCopy } from "lucide-react";
+import { ClipboardCopy, Loader2, PenSquare } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import type { DraftPost } from "@/lib/types";
+import { useAppContext } from "@/context/app-provider";
+import { useMemo } from "react";
 
-interface ActivityFeedProps {
-  drafts: DraftPost[];
-}
-
-export function ActivityFeed({ drafts }: ActivityFeedProps) {
+export function ActivityFeed() {
   const { toast } = useToast();
+  const { drafts, loading } = useAppContext();
+
+  const sortedDrafts = useMemo(() => {
+    return [...drafts].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  }, [drafts]);
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
     toast({ title: "Copied to clipboard!" });
   };
+
+  const renderSkeleton = () => (
+    <div className="space-y-4">
+      {[...Array(3)].map((_, i) => (
+        <div key={i} className="flex items-center gap-4">
+          <div className="h-8 w-8 bg-muted rounded-full animate-pulse"></div>
+          <div className="flex-1 space-y-2">
+            <div className="h-4 bg-muted rounded w-3/4 animate-pulse"></div>
+            <div className="h-4 bg-muted rounded w-1/2 animate-pulse"></div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
 
   return (
     <Card>
@@ -27,12 +43,14 @@ export function ActivityFeed({ drafts }: ActivityFeedProps) {
         <CardDescription>Your recent drafts and their current status.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        {drafts.length > 0 ? (
-          drafts.slice(0, 5).map((draft, index) => (
+        {loading ? (
+          renderSkeleton()
+        ) : sortedDrafts.length > 0 ? (
+          sortedDrafts.slice(0, 5).map((draft, index) => (
             <div key={draft.id}>
               <div className="flex items-start gap-4">
                 <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted">
-                  <span className="text-sm font-medium">{drafts.length - index}</span>
+                   <PenSquare className="h-4 w-4 text-muted-foreground" />
                 </div>
                 <div className="flex-1 space-y-1">
                   <p className="font-medium leading-none">{draft.topic}</p>
@@ -57,7 +75,7 @@ export function ActivityFeed({ drafts }: ActivityFeedProps) {
                   <ClipboardCopy className="h-4 w-4" />
                 </Button>
               </div>
-              {index < drafts.slice(0, 5).length - 1 && <Separator className="my-4" />}
+              {index < sortedDrafts.slice(0, 5).length - 1 && <Separator className="my-4" />}
             </div>
           ))
         ) : (
