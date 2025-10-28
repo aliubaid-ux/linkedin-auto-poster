@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -11,7 +11,6 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { useToast } from "@/hooks/use-toast";
 import { X, Loader2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Profile } from "@/lib/types";
@@ -28,6 +27,7 @@ type ProfileFormValues = z.infer<typeof profileFormSchema>;
 
 function ProfileForm() {
   const { profile, updateProfile } = useAppContext();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
@@ -50,7 +50,7 @@ function ProfileForm() {
         preferredTimeUTC: profile.preferredTimeUTC,
       });
     }
-  }, [profile, form]);
+  }, [profile, form.reset]);
 
   const { fields, append, remove } = useFieldArray({
     name: "niches",
@@ -59,12 +59,14 @@ function ProfileForm() {
 
   async function onSubmit(data: ProfileFormValues) {
     if (!profile) return;
+    setIsSubmitting(true);
     const updatedProfileData: Profile = {
       ...profile,
       ...data,
       niches: data.niches ? data.niches.map(n => n.value) : [],
     };
     await updateProfile(updatedProfileData);
+    setIsSubmitting(false);
   }
 
   return (
@@ -218,8 +220,8 @@ function ProfileForm() {
         </Card>
         
         <div className="flex justify-end">
-            <Button type="submit" disabled={form.formState.isSubmitting}>
-                {form.formState.isSubmitting ? (
+            <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? (
                     <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving...</>
                 ) : (
                     "Save Changes"
