@@ -38,7 +38,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const loadInitialData = useCallback(async (currentUser: User) => {
     try {
       const fetchProfile = supabase.from('profiles').select('*').eq('user_id', currentUser.id).single();
-      const fetchDrafts = supabase.from('drafts').select('*').eq('user_id', currentUser.id);
+      const fetchDrafts = supabase.from('drafts').select('*').eq('user_id', currentUser.id).order('createdAt', { ascending: false });
       const fetchLearnedTone = supabase.from('learned_tones').select('*').eq('user_id', currentUser.id).single();
       const fetchLogs = supabase.from('logs').select('*').eq('user_id', currentUser.id);
 
@@ -115,27 +115,31 @@ export function AppProvider({ children }: { children: ReactNode }) {
     };
   }, [pathname, router, loadInitialData, supabase]);
 
-  useEffect(() => {
-    if (user) {
-      const channel = supabase.channel('public-changes').on(
-        'postgres_changes',
-        { event: '*', schema: 'public', filter: `user_id=eq.${user.id}` },
-        () => loadInitialData(user)
-      ).subscribe();
+  // Temporarily removed real-time listener to prevent state synchronization issues.
+  // This will be replaced with a more robust solution in the future.
+  // useEffect(() => {
+  //   if (user) {
+  //     const channel = supabase.channel('public-changes').on(
+  //       'postgres_changes',
+  //       { event: '*', schema: 'public', filter: `user_id=eq.${user.id}` },
+  //       (payload) => {
+  //         loadInitialData(user);
+  //       }
+  //     ).subscribe();
       
-      return () => {
-        supabase.removeChannel(channel);
-      };
-    }
-  }, [user, loadInitialData, supabase]);
+  //     return () => {
+  //       supabase.removeChannel(channel);
+  //     };
+  //   }
+  // }, [user, loadInitialData, supabase]);
 
 
   async function updateProfile(newProfile: Profile) {
     if (!user) return;
     const { data, error } = await supabase.from('profiles').upsert({ ...newProfile, user_id: user.id }).select().single();
     if (error) {
-      console.error('Error setting profile:', error);
-    } else if(data) {
+      console.error('Error updating profile:', error);
+    } else if (data) {
       setProfile(data);
     }
   }
@@ -152,8 +156,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   async function updateDraft(updatedDraft: DraftPost) {
     if (!user) return;
-    const { error } = await supabase.from('drafts').update(updatedDraft).eq('id', updatedDraft.id);
-    if (error) console.error('Error updating draft:', error);
+    const { data, error } = await supabase.from('drafts').update(updatedDraft).eq('id', updatedDraft.id).select().single();
+    if (error) {
+        console.error('Error updating draft:', error);
+    } else if (data) {
+        setDrafts(prevDrafts => prevDrafts.map(d => d.id === data.id ? data : d));
+    }
   }
 
   async function addLog(log: Omit<LogEntry, 'id' | 'createdAt' | 'user_id'>) {
