@@ -33,7 +33,7 @@ export const initialDrafts: DraftPost[] = [
     source: 'hacker-news',
     topic: 'The surprising power of boredom in creative work',
     raw_generation: 'Being bored can be good for creativity. When you are bored, your mind wanders. This can lead to new ideas. Embrace boredom.',
-    optimized_text: `I used to think every minute had to be productive. Now? I schedule 'boredom breaks'. It's where my best ideas come from. That 'aha!' moment for my last project didn't come from a brainstorm, but from staring out a window. It seems our brains do their best work when we're not actively 'working'. Have you ever found a great idea in a moment of idleness? #Creativity #Productivity #Mindfulness`,
+    optimized_text: `I used to think every minute had to be productive. Now? I schedule \'boredom breaks\'. It\'s where my best ideas come from. That \'aha!\' moment for my last project didn\'t come from a brainstorm, but from staring out a window. It seems our brains do their best work when we\'re not actively \'working\'. Have you ever found a great idea in a moment of idleness? #Creativity #Productivity #Mindfulness`,
     optimized_meta: {
       hooks: ['question', 'story'],
       emotional_score: 0.85,
@@ -49,9 +49,9 @@ export const initialDrafts: DraftPost[] = [
 ];
 
 export const initialLearnedTone: LearnedTone = {
-  avg_length: 850,
-  preferred_hooks: ['question', 'stat', 'story'],
-  sentence_complexity: 1.2,
+  avgLength: 850,
+  preferredHooks: ['question', 'stat', 'story'],
+  sentenceComplexity: 1.2,
   emojiUsage: 0.12,
 };
 
