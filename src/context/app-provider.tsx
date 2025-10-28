@@ -142,8 +142,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   async function addDraft(draft: Omit<DraftPost, 'id' | 'createdAt' | 'user_id'>) {
     if (!user) return;
-    const { error } = await supabase.from('drafts').insert({ ...draft, user_id: user.id });
-    if (error) console.error('Error adding draft:', error);
+    const { data, error } = await supabase.from('drafts').insert({ ...draft, user_id: user.id }).select().single();
+    if (error) {
+        console.error('Error adding draft:', error);
+    } else if (data) {
+        setDrafts(prevDrafts => [data, ...prevDrafts]);
+    }
   }
 
   async function updateDraft(updatedDraft: DraftPost) {
