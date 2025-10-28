@@ -115,23 +115,21 @@ export function AppProvider({ children }: { children: ReactNode }) {
     };
   }, [pathname, router, loadInitialData, supabase]);
 
-  // Temporarily removed real-time listener to prevent state synchronization issues.
-  // This will be replaced with a more robust solution in the future.
-  // useEffect(() => {
-  //   if (user) {
-  //     const channel = supabase.channel('public-changes').on(
-  //       'postgres_changes',
-  //       { event: '*', schema: 'public', filter: `user_id=eq.${user.id}` },
-  //       (payload) => {
-  //         loadInitialData(user);
-  //       }
-  //     ).subscribe();
+  useEffect(() => {
+    if (user) {
+      const channel = supabase.channel('public-changes').on(
+        'postgres_changes',
+        { event: '*', schema: 'public', filter: `user_id=eq,${user.id}` },
+        (payload) => {
+          loadInitialData(user);
+        }
+      ).subscribe();
       
-  //     return () => {
-  //       supabase.removeChannel(channel);
-  //     };
-  //   }
-  // }, [user, loadInitialData, supabase]);
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    }
+  }, [user, loadInitialData, supabase]);
 
 
   async function updateProfile(newProfile: Profile) {
@@ -170,6 +168,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (error) console.error('Error adding log:', error);
   }
   
+  if (loading && pathname !== '/login') {
+    return <div>Loading...</div>;
+  }
+
   if (pathname === '/login') {
     return <>{children}</>;
   }
