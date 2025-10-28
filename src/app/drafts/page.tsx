@@ -369,7 +369,7 @@ export default function DraftsPage() {
         {statusFilters.map((status) => (
           <TabsContent key={status} value={status} className="grid gap-4 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
             {drafts.filter((d) => d.status === status).map((draft) => (
-              <DraftCard key={draft.id} draft={.draft} />
+              <DraftCard key={draft.id} draft={draft} />
             ))}
             {drafts.filter((d) => d.status === status).length === 0 && (
               <Card className="col-span-full">

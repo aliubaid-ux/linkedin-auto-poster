@@ -78,7 +78,7 @@ export default function ProfilePage() {
                        <Skeleton className="h-20 w-full" />
                     </CardContent>
                 </Card>
-                 <.Card>
+                 <Card>
                     <CardHeader>
                         <CardTitle>Content Preferences</CardTitle>
                          <CardDescription>
