@@ -1,39 +1,19 @@
 "use client";
 
-import { useEffect } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useAppContext } from "@/context/app-provider";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useToast } from "@/hooks/use-toast";
 import { X } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Profile } from "@/lib/types";
 
 const profileFormSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters."),
@@ -51,27 +31,15 @@ export default function ProfilePage() {
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
-    defaultValues: {
+    // Use the `values` prop to handle dynamic data loading
+    values: {
       name: profile?.name || '',
-      niches: profile?.niches.map(n => ({ value: n })) || [],
+      niches: profile?.niches.map(n => ({ value: n })) || [{ value: '' }],
       tone: profile?.tone || 'Expert + Conversational',
       postingMode: profile?.postingMode || 'manual',
       preferredTimeUTC: profile?.preferredTimeUTC || '10:00',
     },
   });
-  
-  useEffect(() => {
-    if (profile) {
-      form.reset({
-        name: profile.name,
-        niches: profile.niches.map(n => ({ value: n })),
-        tone: profile.tone,
-        postingMode: profile.postingMode,
-        preferredTimeUTC: profile.preferredTimeUTC,
-      });
-    }
-  }, [profile, form]);
-
 
   const { fields, append, remove } = useFieldArray({
     name: "niches",
@@ -80,7 +48,7 @@ export default function ProfilePage() {
 
   function onSubmit(data: ProfileFormValues) {
     if (!profile) return;
-    const updatedProfileData = {
+    const updatedProfileData: Profile = {
       ...profile,
       ...data,
       niches: data.niches.map(n => n.value),
@@ -92,7 +60,7 @@ export default function ProfilePage() {
     });
   }
   
-  if (loading || !profile) {
+  if (loading) {
     return (
         <div className="mx-auto grid w-full max-w-6xl gap-2">
             <h1 className="text-3xl font-semibold">Profile & Settings</h1>
@@ -110,7 +78,7 @@ export default function ProfilePage() {
                        <Skeleton className="h-20 w-full" />
                     </CardContent>
                 </Card>
-                 <Card>
+                 <.Card>
                     <CardHeader>
                         <CardTitle>Content Preferences</CardTitle>
                          <CardDescription>
@@ -210,7 +178,7 @@ export default function ProfilePage() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Tone of Voice</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select a tone" />
@@ -237,7 +205,7 @@ export default function ProfilePage() {
                     <FormControl>
                       <RadioGroup
                         onValueChange={field.onChange}
-                        defaultValue={field.value}
+                        value={field.value}
                         className="flex flex-col space-y-1"
                       >
                         <FormItem className="flex items-center space-x-3 space-y-0">

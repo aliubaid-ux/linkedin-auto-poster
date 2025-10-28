@@ -27,7 +27,6 @@ import {
   ThumbsUp,
   MessageSquare,
   Eye,
-  BarChart2,
   Sparkles,
   Smile,
   BookOpen,
@@ -36,10 +35,18 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import type { DraftPost } from "@/lib/types";
-import { ClientOnly } from "@/components/client-only";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getRedditHotPosts } from "@/lib/reddit";
 import { Input } from "@/components/ui/input";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 
 function DraftCard({ draft }: { draft: DraftPost }) {
   const { toast } = useToast();
@@ -177,13 +184,13 @@ function DraftCard({ draft }: { draft: DraftPost }) {
           {draft.status === "posted" && (
             <>
               <div className="flex items-center gap-1">
-                <ThumbsUp className="h-4 w-4" /> 128
+                <ThumbsUp className="h-4 w-4" /> {Math.floor(Math.random() * 200)}
               </div>
               <div className="flex items-center gap-1">
-                <MessageSquare className="h-4 w-4" /> 32
+                <MessageSquare className="h-4 w-4" /> {Math.floor(Math.random() * 50)}
               </div>
               <div className="flex items-center gap-1">
-                <Eye className="h-4 w-4" /> 5.6k
+                <Eye className="h-4 w-4" /> {Math.floor(Math.random() * 10000)}
               </div>
             </>
           )}
@@ -213,12 +220,45 @@ function DraftCard({ draft }: { draft: DraftPost }) {
 }
 
 export default function DraftsPage() {
-  const { drafts, setDrafts, loading } = useAppContext();
+  const { drafts, addDraft, loading, profile } = useAppContext();
   const [subreddit, setSubreddit] = useState("business");
+  const [topic, setTopic] = useState("");
+  const { toast } = useToast();
 
   const handleFetchFromReddit = async () => {
-    const newDrafts = await getRedditHotPosts(subreddit);
-    setDrafts((prevDrafts: DraftPost[]) => [...prevDrafts, ...newDrafts]);
+    if (!profile) return;
+    try {
+        const newDrafts = await getRedditHotPosts(subreddit, profile);
+        for (const draft of newDrafts) {
+            await addDraft(draft);
+        }
+        toast({ title: "Success", description: `Fetched ${newDrafts.length} new post ideas from r/${subreddit}.` });
+    } catch (error) {
+        console.error(error);
+        toast({ title: "Error", description: "Failed to fetch posts from Reddit.", variant: "destructive" });
+    }
+  };
+
+  const handleGeneratePost = async () => {
+    if (!topic) {
+        toast({ title: "Error", description: "Please enter a topic.", variant: "destructive" });
+        return;
+    }
+    if (!profile) return;
+    // This would ideally call a server-side function to generate a post
+    toast({ title: "Generating Post...", description: "This may take a moment." });
+    // Simulate generation
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    addDraft({
+        topic,
+        source: "manual",
+        status: "draft",
+        raw_generation: `This is a placeholder for a generated post about ${topic}. The real implementation would use an AI model to create content based on the user's tone and niche preferences. Key talking points could be extracted and expanded upon.`, // Placeholder
+        optimized_text: `This is an optimized placeholder for a post about ${topic}. It would be ready for publishing.`, // Placeholder
+        optimized_meta: { engagement_prediction: 0.75, tone_score: 0.9, emotional_score: 0.6, hooks: ["Hook 1", "Hook 2"], tone_adjustments: ["Made it more conversational"] }, // Placeholder
+    })
+    toast({ title: "Post Generated!", description: "Your new draft is ready for review." });
+    setTopic("");
   };
 
   const statusFilters: DraftPost["status"][] = ["draft", "scheduled", "posted", "failed"];
@@ -270,9 +310,36 @@ export default function DraftsPage() {
             placeholder="Enter subreddit"
             value={subreddit}
             onChange={(e) => setSubreddit(e.target.value)}
+            className="w-auto"
           />
           <Button onClick={handleFetchFromReddit}>Fetch from Reddit</Button>
-          <Button>Generate New Post</Button>
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button>Generate New Post</Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Generate a New Post</DialogTitle>
+                <DialogDescription>
+                  Enter a topic and our AI will create a draft for you.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="grid gap-4 py-4">
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="topic" className="text-right">
+                    Topic
+                  </Label>
+                  <Input
+                    id="topic"
+                    value={topic}
+                    onChange={(e) => setTopic(e.target.value)}
+                    className="col-span-3"
+                  />
+                </div>
+              </div>
+              <Button onClick={handleGeneratePost}>Generate</Button>
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
 
@@ -290,12 +357,19 @@ export default function DraftsPage() {
           {drafts.map((draft) => (
             <DraftCard key={draft.id} draft={draft} />
           ))}
+           {drafts.length === 0 && (
+              <Card className="col-span-full">
+                <CardContent className="p-6">
+                  <p className="text-center text-muted-foreground">No drafts found. Generate one or fetch from Reddit to get started.</p>
+                </CardContent>
+              </Card>
+            )}
         </TabsContent>
 
         {statusFilters.map((status) => (
           <TabsContent key={status} value={status} className="grid gap-4 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
             {drafts.filter((d) => d.status === status).map((draft) => (
-              <DraftCard key={draft.id} draft={draft} />
+              <DraftCard key={draft.id} draft={.draft} />
             ))}
             {drafts.filter((d) => d.status === status).length === 0 && (
               <Card className="col-span-full">
