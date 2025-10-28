@@ -6,28 +6,76 @@ import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { LinkedInIcon } from "@/components/icons";
 import { Check, X } from 'lucide-react';
+import { createClient } from "@/lib/supabase-client";
+import { useEffect, useState } from "react";
+import { User } from "@supabase/supabase-js";
+import { useRouter } from "next/navigation";
 
 export default function ConnectPage() {
     const { toast } = useToast();
-    // Mock connection status
-    const isConnected = false;
+    const router = useRouter();
+    const supabase = createClient();
 
-    const handleConnect = () => {
-        toast({ title: "Connecting to LinkedIn..." });
-        // Simulate API call
-        setTimeout(() => {
-            toast({ title: "Successfully connected to LinkedIn!" });
-        }, 2000);
+    const [user, setUser] = useState<User | null>(null);
+    const [isConnected, setIsConnected] = useState(false);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const checkSession = async () => {
+            const { data: { session } } = await supabase.auth.getSession();
+            const currentUser = session?.user ?? null;
+            setUser(currentUser);
+            setIsConnected(!!currentUser);
+            setLoading(false);
+        };
+
+        checkSession();
+
+        const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+            const currentUser = session?.user ?? null;
+            setUser(currentUser);
+            setIsConnected(!!currentUser);
+            if (event === 'SIGNED_OUT') {
+                router.push('/login');
+            }
+        });
+
+        return () => {
+            authListener.subscription.unsubscribe();
+        };
+    }, [router, supabase.auth]);
+
+    const handleConnect = async () => {
+        await supabase.auth.signInWithOAuth({
+            provider: 'linkedin',
+            options: {
+              redirectTo: `${location.origin}/auth/callback`,
+            },
+        });
     };
 
-    const handleDisconnect = () => {
-        toast({ title: "Disconnecting from LinkedIn...", variant: "destructive" });
-         // Simulate API call
-        setTimeout(() => {
-            toast({ title: "Successfully disconnected from LinkedIn." });
-        }, 2000);
+    const handleDisconnect = async () => {
+        await supabase.auth.signOut();
+        toast({ title: "Successfully disconnected." });
     };
 
+    if (loading) {
+        return (
+            <div className="grid gap-6">
+                <Card className="flex flex-col">
+                    <CardHeader>
+                        <CardTitle>Connections</CardTitle>
+                        <CardDescription>Connect your social accounts to automate your workflow.</CardDescription>
+                    </CardHeader>
+                </Card>
+                <Card>
+                    <CardHeader>
+                        <p>Loading connection status...</p>
+                    </CardHeader>
+                </Card>
+            </div>
+        );
+    }
 
     return (
         <div className="grid gap-6">
