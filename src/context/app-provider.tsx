@@ -4,6 +4,7 @@ import { createContext, useContext, ReactNode, useEffect, useState, useCallback 
 import { useRouter, usePathname } from 'next/navigation';
 import { createClient } from '@/lib/supabase-client';
 import type { User } from '@supabase/supabase-js';
+import { useToast } from '@/hooks/use-toast';
 
 import type { Profile, DraftPost, LearnedTone, LogEntry } from '@/lib/types';
 import { initialProfile, initialLearnedTone } from '@/lib/data';
@@ -31,6 +32,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const supabase = createClient();
+  const { toast } = useToast();
 
   const router = useRouter();
   const pathname = usePathname();
@@ -137,8 +139,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const { data, error } = await supabase.from('profiles').upsert({ ...newProfile, user_id: user.id }).select().single();
     if (error) {
       console.error('Error updating profile:', error);
+      toast({ title: "Error updating profile", description: error.message, variant: "destructive" });
     } else if (data) {
       setProfile(data);
+      toast({ title: "Profile updated successfully!" });
     }
   }
 
@@ -147,8 +151,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const { data, error } = await supabase.from('drafts').insert({ ...draft, user_id: user.id }).select().single();
     if (error) {
         console.error('Error adding draft:', error);
+        toast({ title: "Error adding draft", description: error.message, variant: "destructive" });
     } else if (data) {
         setDrafts(prevDrafts => [data, ...prevDrafts]);
+        toast({ title: "Draft added successfully!" });
     }
   }
 
@@ -157,15 +163,20 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const { data, error } = await supabase.from('drafts').update(updatedDraft).eq('id', updatedDraft.id).select().single();
     if (error) {
         console.error('Error updating draft:', error);
+        toast({ title: "Error updating draft", description: error.message, variant: "destructive" });
     } else if (data) {
         setDrafts(prevDrafts => prevDrafts.map(d => d.id === data.id ? data : d));
+        toast({ title: "Draft updated successfully!" });
     }
   }
 
   async function addLog(log: Omit<LogEntry, 'id' | 'createdAt' | 'user_id'>) {
     if (!user) return;
     const { error } = await supabase.from('logs').insert({ ...log, user_id: user.id });
-    if (error) console.error('Error adding log:', error);
+    if (error) {
+      console.error('Error adding log:', error);
+      toast({ title: "Error adding log", description: error.message, variant: "destructive" });
+    }
   }
   
   if (loading && pathname !== '/login') {
