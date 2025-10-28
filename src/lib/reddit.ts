@@ -35,7 +35,7 @@ async function generatePost(title: string, selftext: string, profile: Profile): 
     RAW GENERATION:
     Original Topic: "${title}"
     This is a simulated raw generation. Based on the topic and the user's profile, I'm expanding on the key ideas.
-    - Idea 1: Connect ${title} to ${profile.niches[0] || 'the user\\'s main niche'}.
+    - Idea 1: Connect ${title} to ${profile.niches[0] || "the user's main niche"}.
     - Idea 2: Discuss the implications from a ${profile.tone} perspective.
     - Idea 3: Add a personal anecdote related to the topic.
     (This would be a longer, more fleshed-out text in a real scenario).
@@ -73,7 +73,7 @@ async function generatePost(title: string, selftext: string, profile: Profile): 
 }
 
 
-export async function getRedditHotPosts(subreddit: string, profile: Profile): Promise<Omit<DraftPost, \'id\' | \'createdAt\' | \'user_id\'>[]> {
+export async function getRedditHotPosts(subreddit: string, profile: Profile): Promise<Omit<DraftPost, 'id' | 'createdAt' | 'user_id'>[]> {
   try {
     const response = await fetch(`${REDDIT_API_URL}${subreddit}/hot.json?limit=5`); // Fetch top 5 hot posts
     if (!response.ok) {
