@@ -2,9 +2,9 @@ export interface Profile {
   name: string;
   niches: string[];
   tone: string;
-  postingMode: 'auto' | 'manual';
-  preferredTimeUTC: string;
-  linkedinConnected: boolean;
+  posting_mode: 'auto' | 'manual';
+  preferred_time_utc: string;
+  linkedin_connected: boolean;
 }
 
 export interface DraftPost {

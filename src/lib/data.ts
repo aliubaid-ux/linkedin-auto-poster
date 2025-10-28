@@ -4,9 +4,9 @@ export const initialProfile: Profile = {
   name: 'Ali Ubaid',
   niches: ['AI', 'SEO', 'Web Design'],
   tone: 'Expert + Conversational',
-  postingMode: 'manual',
-  preferredTimeUTC: '10:00',
-  linkedinConnected: false,
+  posting_mode: 'manual',
+  preferred_time_utc: '10:00',
+  linkedin_connected: false,
 };
 
 export const initialDrafts: DraftPost[] = [
