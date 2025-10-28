@@ -1,4 +1,4 @@
--- This script creates all tables with the correct snake_case naming convention
+-- This script creates the missing 'learned_tones' and 'logs' tables
 -- and sets up the necessary Row-Level Security policies.
 
 -- Drop all existing tables to start fresh
@@ -67,3 +67,11 @@ CREATE TABLE public.logs (
 ALTER TABLE public.logs ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Users can manage their own logs." ON public.logs
   FOR ALL USING (auth.uid() = user_id);
+
+-- Function to force PostgREST schema cache reload
+CREATE OR REPLACE FUNCTION force_schema_reload()
+RETURNS void AS $$
+BEGIN
+  NOTIFY pgrst, 'reload schema';
+END;
+$$ LANGUAGE plpgsql;
