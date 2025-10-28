@@ -21,24 +21,24 @@ export interface DraftPost {
     tone_adjustments?: string[];
   };
   status: 'draft' | 'scheduled' | 'posted' | 'failed';
-  createdAt: string;
-  postedAt: string | null;
-  linkedinPostId: string | null;
+  created_at: string;
+  posted_at: string | null;
+  linkedin_post_id: string | null;
 }
 
 export interface LearnedTone {
   avg_length: number;
   preferred_hooks: string[];
   sentence_complexity: number;
-  emojiUsage: number;
+  emoji_usage: number;
 }
 
 export interface LogEntry {
   id: string;
   timestamp: string;
-  runId: string;
+  run_id: string;
   status: 'success' | 'partial' | 'failed';
-  generatedCount: number;
-  postedCount: number;
+  generated_count: number;
+  posted_count: number;
   errors: string[];
 }

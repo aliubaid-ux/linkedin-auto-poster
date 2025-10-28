@@ -24,9 +24,9 @@ export const initialDrafts: DraftPost[] = [
       tone_adjustments: ['Added personal anecdote', 'Included relevant hashtags'],
     },
     status: 'draft',
-    createdAt: new Date(Date.now() - 86400000).toISOString(), // 1 day ago
-    postedAt: null,
-    linkedinPostId: null,
+    created_at: new Date(Date.now() - 86400000).toISOString(), // 1 day ago
+    posted_at: null,
+    linkedin_post_id: null,
   },
   {
     id: 'draft_2',
@@ -42,36 +42,36 @@ export const initialDrafts: DraftPost[] = [
       tone_adjustments: ['Shifted to first-person narrative', 'Made the CTA more personal'],
     },
     status: 'posted',
-    createdAt: new Date(Date.now() - 2 * 86400000).toISOString(), // 2 days ago
-    postedAt: new Date(Date.now() - 86400000).toISOString(),
-    linkedinPostId: 'urn:li:share:123456789',
+    created_at: new Date(Date.now() - 2 * 86400000).toISOString(), // 2 days ago
+    posted_at: new Date(Date.now() - 86400000).toISOString(),
+    linkedin_post_id: 'urn:li:share:123456789',
   },
 ];
 
 export const initialLearnedTone: LearnedTone = {
-  avgLength: 850,
-  preferredHooks: ['question', 'stat', 'story'],
-  sentenceComplexity: 1.2,
-  emojiUsage: 0.12,
+  avg_length: 850,
+  preferred_hooks: ['question', 'stat', 'story'],
+  sentence_complexity: 1.2,
+  emoji_usage: 0.12,
 };
 
 export const initialLogs: LogEntry[] = [
     {
         id: 'log_1',
         timestamp: new Date(Date.now() - 2 * 86400000).toISOString(),
-        runId: 'run_abc123',
+        run_id: 'run_abc123',
         status: 'success',
-        generatedCount: 3,
-        postedCount: 1,
+        generated_count: 3,
+        posted_count: 1,
         errors: [],
     },
     {
         id: 'log_2',
         timestamp: new Date(Date.now() - 3 * 86400000).toISOString(),
-        runId: 'run_def456',
+        run_id: 'run_def456',
         status: 'partial',
-        generatedCount: 2,
-        postedCount: 0,
+        generated_count: 2,
+        posted_count: 0,
         errors: ['LinkedIn API token expired'],
     }
 ];
