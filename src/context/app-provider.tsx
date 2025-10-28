@@ -70,7 +70,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
       setDrafts(draftsResult.data || []);
 
-       if (learnedToneResult.data) {
+      if (learnedToneResult.data) {
         setLearnedTone(learnedToneResult.data);
       } else if (learnedToneResult.error && learnedToneResult.error.code === 'PGRST116') {
         const { data: newTone, error: insertError } = await supabase
@@ -78,8 +78,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
             .insert({ ...initialLearnedTone, user_id: currentUser.id })
             .select()
             .single();
-        if (insertError) console.error('Error creating initial learned tone:', insertError);
-        else setLearnedTone(newTone);
+        if (insertError) {
+            console.error('Failed to create initial learned_tone. Full error details:', JSON.stringify(insertError, null, 2));
+            toast({
+                title: "Critical Error: Could not initialize user tone.",
+                description: `Details: ${insertError.message}. Please refresh the page or contact support.`,
+                variant: "destructive",
+                duration: 10000
+            });
+        } else {
+            setLearnedTone(newTone);
+        }
       }
 
       setLogs(logsResult.data || []);
@@ -89,7 +98,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     } finally {
       setLoading(false);
     }
-  }, [supabase]);
+  }, [supabase, toast]);
 
   useEffect(() => {
     const { data: authListener } = supabase.auth.onAuthStateChange(
@@ -119,19 +128,21 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (user) {
-      const channel = supabase.channel('public-changes').on(
-        'postgres_changes',
-        { event: '*', schema: 'public', filter: `user_id=eq,${user.id}` },
-        (payload) => {
-          loadInitialData(user);
-        }
-      ).subscribe();
-      
-      return () => {
-        supabase.removeChannel(channel);
-      };
+        const channel = supabase.channel('public-changes').on(
+            'postgres_changes',
+            { event: '*', schema: 'public', table: 'drafts', filter: `user_id=eq,${user.id}` },
+            () => loadInitialData(user)
+        ).on(
+            'postgres_changes',
+            { event: '*', schema: 'public', table: 'logs', filter: `user_id=eq,${user.id}` },
+            () => loadInitialData(user)
+        ).subscribe();
+        
+        return () => {
+            supabase.removeChannel(channel);
+        };
     }
-  }, [user, loadInitialData, supabase]);
+}, [user, loadInitialData, supabase]);
 
 
   async function updateProfile(newProfile: Profile) {
