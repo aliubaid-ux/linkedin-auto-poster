@@ -1,48 +1,55 @@
 'use client';
 
-import { useAppContext } from "@/context/app-provider";
-import { StatsCards } from "@/components/stats-cards";
-import { PostGenerator } from "@/components/post-generator";
-import { ActivityFeed } from "@/components/activity-feed";
-import { Skeleton } from "@/components/ui/skeleton";
+import { createClient } from '@/lib/supabase-client';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import type { User } from '@supabase/supabase-js';
+import Dashboard from '@/components/dashboard';
 
-export default function DashboardPage() {
-  const { drafts, loading } = useAppContext();
+export default function HomePage() {
+  const router = useRouter();
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+  const supabase = createClient();
 
-  const stats = {
-    total: drafts.length,
-    posted: drafts.filter((d) => d.status === "posted").length,
-    drafts: drafts.filter((d) => d.status === "draft").length,
-  };
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      const currentUser = session?.user ?? null;
+      setUser(currentUser);
+      setLoading(false);
+      if (!currentUser) {
+        router.push('/login');
+      }
+    };
+
+    checkSession();
+
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_OUT' || !session) {
+        router.push('/login');
+      } else if (session) {
+        setUser(session.user);
+      }
+    });
+
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
+  }, [router, supabase.auth]);
 
   if (loading) {
     return (
-      <div className="grid flex-1 items-start gap-4 md:gap-8 lg:grid-cols-3 xl:grid-cols-3">
-        <div className="grid auto-rows-max items-start gap-4 md:gap-8 lg:col-span-2">
-          <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4">
-            <Skeleton className="h-36" />
-            <Skeleton className="h-36" />
-            <Skeleton className="h-36" />
-            <Skeleton className="h-36" />
-          </div>
-          <Skeleton className="h-64" />
+        <div className="flex items-center justify-center h-screen bg-background">
+            <p>Loading...</p>
         </div>
-        <div className="grid auto-rows-max items-start gap-4 md:gap-8 lg:col-span-1">
-          <Skeleton className="h-96" />
-        </div>
-      </div>
     );
   }
+  
+  if (!user) {
+      // This is brief, as the redirect in useEffect will handle it
+      return null;
+  }
 
-  return (
-    <div className="grid flex-1 items-start gap-4 md:gap-8 lg:grid-cols-3 xl:grid-cols-3">
-      <div className="grid auto-rows-max items-start gap-4 md:gap-8 lg:col-span-2">
-        <StatsCards total={stats.total} posted={stats.posted} drafts={stats.drafts} />
-        <PostGenerator />
-      </div>
-      <div className="grid auto-rows-max items-start gap-4 md:gap-8 lg:col-span-1">
-        <ActivityFeed drafts={drafts} />
-      </div>
-    </div>
-  );
+  return <Dashboard />;
 }
