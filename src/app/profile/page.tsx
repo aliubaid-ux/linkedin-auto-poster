@@ -261,7 +261,7 @@ export default function ProfilePage() {
                          <CardDescription>
                             Define the voice and automation level for your posts.
                         </CardDescription>
-                    </Header>
+                    </CardHeader>
                     <CardContent className="space-y-4">
                         <Skeleton className="h-10 w-1/2" />
                         <Skeleton className="h-20 w-full" />
