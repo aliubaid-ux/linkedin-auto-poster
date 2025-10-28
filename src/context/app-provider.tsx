@@ -39,8 +39,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const loadInitialData = useCallback(async (currentUser: User) => {
     try {
-      const fetchProfile = supabase.from('profiles').select('*').eq('user_id', currentUser.id).single();
-      const fetchDrafts = supabase.from('drafts').select('*').eq('user_id', currentUser.id).order('createdAt', { ascending: false });
+      const fetchProfile = supabase.from('profiles').select('*').eq('id', currentUser.id).single();
+      const fetchDrafts = supabase.from('drafts').select('*').eq('user_id', currentUser.id).order('created_at', { ascending: false });
       const fetchLearnedTone = supabase.from('learned_tones').select('*').eq('user_id', currentUser.id).single();
       const fetchLogs = supabase.from('logs').select('*').eq('user_id', currentUser.id);
 
@@ -61,7 +61,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       } else if (profileResult.error && profileResult.error.code === 'PGRST116') { // No profile found
         const { data: newProfile, error: insertError } = await supabase
             .from('profiles')
-            .insert({ ...initialProfile, user_id: currentUser.id })
+            .insert({ ...initialProfile, id: currentUser.id })
             .select()
             .single();
         if (insertError) console.error('Error creating initial profile:', insertError);
@@ -136,7 +136,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   async function updateProfile(newProfile: Profile) {
     if (!user) return;
-    const { data, error } = await supabase.from('profiles').upsert({ ...newProfile, user_id: user.id }).select().single();
+    const { data, error } = await supabase.from('profiles').upsert({ ...newProfile, id: user.id }).select().single();
     if (error) {
       console.error('Error updating profile:', error);
       toast({ title: "Error updating profile", description: error.message, variant: "destructive" });
