@@ -64,7 +64,6 @@ export function PostGenerator() {
           tone_adjustments: adaptationResult.adjustments,
         },
         status: "draft",
-        postedAt: null,
       };
 
       await addDraft(newDraft);
