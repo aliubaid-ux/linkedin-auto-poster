@@ -46,7 +46,7 @@ const adaptPostToneToUserPreferencesPrompt = ai.definePrompt({
   prompt: `Analyze the improved post vs. my learned tone profile:
 {{{learnedToneJson}}}
 If the post deviates, adjust word choice/length to match learned tone. 
-Return final post and an object: {score: 0.0-1.0, adjustments: [...]}`,
+Return an object: {finalPost: string, score: 0.0-1.0, adjustments: [...]}`,
 });
 
 const adaptPostToneToUserPreferencesFlow = ai.defineFlow(
