@@ -252,24 +252,44 @@ export default function DraftsPage() {
 
   const handleGeneratePost = async () => {
     if (!topic) {
-        toast({ title: "Error", description: "Please enter a topic.", variant: "destructive" });
-        return;
+      toast({ title: "Error", description: "Please enter a topic.", variant: "destructive" });
+      return;
     }
-    if (!profile) return;
-    // This would ideally call a server-side function to generate a post
+    if (!profile) {
+      toast({ title: "Error", description: "Profile not found.", variant: "destructive" });
+      return;
+    }
+
     toast({ title: "Generating Post...", description: "This may take a moment." });
-    // Simulate generation
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    addDraft({
+
+    try {
+      const response = await fetch('/api/generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ topic, context: '', profile }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to generate content: ${response.statusText}`);
+      }
+
+      const generatedContent = await response.json();
+
+      await addDraft({
+        ...generatedContent,
         topic,
         source: "manual",
         status: "draft",
-        raw_generation: `This is a placeholder for a generated post about ${topic}. The real implementation would use an AI model to create content based on the user's tone and niche preferences. Key talking points could be extracted and expanded upon.`, // Placeholder
-        optimized_text: `This is an optimized placeholder for a post about ${topic}. It would be ready for publishing.`, // Placeholder
-        optimized_meta: { engagement_prediction: 0.75, tone_score: 0.9, emotional_score: 0.6, hooks: ["Hook 1", "Hook 2"], tone_adjustments: ["Made it more conversational"] }, // Placeholder
-    })
-    toast({ title: "Post Generated!", description: "Your new draft is ready for review." });
-    setTopic("");
+      });
+
+      toast({ title: "Post Generated!", description: "Your new draft is ready for review." });
+      setTopic("");
+    } catch (error) {
+      console.error("Error generating post:", error);
+      toast({ title: "Error", description: "Failed to generate the post.", variant: "destructive" });
+    }
   };
 
   const statusFilters: DraftPost["status"][] = ["draft", "scheduled", "posted", "failed"];
