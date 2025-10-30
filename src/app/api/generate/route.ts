@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { run } from '@genkit-ai/tools';
+import { run } from '@genkit-ai/core';
 import { generatePostFlow } from '@/ai/flows/generate-linkedin-post';
 
 export async function POST(req: NextRequest) {
