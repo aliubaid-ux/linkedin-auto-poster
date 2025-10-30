@@ -6,8 +6,6 @@ import {generateLinkedinPost} from '@/ai/flows/generate-linkedin-post';
 import {createClient} from '@/lib/supabase-server';
 import {getProfile} from '@/lib/data';
 
-export const runtime = 'edge';
-
 const app = new Hono().basePath('/api/cron');
 
 app.get('/daily-post', async c => {
