@@ -30,6 +30,7 @@ import {
   Sparkles,
   Smile,
   BookOpen,
+  Trash2,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -47,8 +48,9 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
+import { format } from "@/lib/utils";
 
-function DraftCard({ draft }: { draft: DraftPost }) {
+function DraftCard({ draft, deleteDraft }: { draft: DraftPost, deleteDraft: (id: string) => void }) {
   const { toast } = useToast();
   const { updateDraft } = useAppContext();
   const [isEditing, setIsEditing] = useState(false);
@@ -80,7 +82,7 @@ function DraftCard({ draft }: { draft: DraftPost }) {
       <CardHeader>
         <CardTitle className="text-lg">{draft.topic}</CardTitle>
         <CardDescription>
-          Generated on {new Date(draft.createdAt).toISOString().split('T')[0]} from {
+          Generated on {format(draft.createdAt, { dateStyle: 'medium' })} from {
             draft.source
           }
         </CardDescription>
@@ -90,7 +92,7 @@ function DraftCard({ draft }: { draft: DraftPost }) {
           </Badge>
           {draft.postedAt && (
             <span className="text-xs text-muted-foreground">
-              Posted on {new Date(draft.postedAt).toISOString().split('T')[0]}
+              Posted on {format(draft.postedAt, { dateStyle: 'medium' })}
             </span>
           )}
         </div>
@@ -203,11 +205,20 @@ function DraftCard({ draft }: { draft: DraftPost }) {
           >
             <ClipboardCopy className="h-4 w-4" />
           </Button>
-          {!isEditing && (
-            <Button variant="outline" onClick={() => setIsEditing(true)}>
-              <Edit className="mr-2 h-4 w-4" /> Edit
-            </Button>
-          )}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setIsEditing(true)}
+          >
+            <Edit className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => deleteDraft(draft.id)}
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
           {draft.status !== "posted" && (
             <Button onClick={handlePost}>
               <Share2 className="mr-2 h-4 w-4" /> Post Now
@@ -220,7 +231,7 @@ function DraftCard({ draft }: { draft: DraftPost }) {
 }
 
 export default function DraftsPage() {
-  const { drafts, addDraft, loading, profile } = useAppContext();
+  const { drafts, addDraft, loading, profile, deleteDraft } = useAppContext();
   const [subreddit, setSubreddit] = useState("business");
   const [topic, setTopic] = useState("");
   const { toast } = useToast();
@@ -355,7 +366,7 @@ export default function DraftsPage() {
 
         <TabsContent value="all" className="grid gap-4 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
           {drafts.map((draft) => (
-            <DraftCard key={draft.id} draft={draft} />
+            <DraftCard key={draft.id} draft={draft} deleteDraft={deleteDraft} />
           ))}
            {drafts.length === 0 && (
               <Card className="col-span-full">
@@ -369,7 +380,7 @@ export default function DraftsPage() {
         {statusFilters.map((status) => (
           <TabsContent key={status} value={status} className="grid gap-4 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
             {drafts.filter((d) => d.status === status).map((draft) => (
-              <DraftCard key={draft.id} draft={draft} />
+              <DraftCard key={draft.id} draft={draft} deleteDraft={deleteDraft} />
             ))}
             {drafts.filter((d) => d.status === status).length === 0 && (
               <Card className="col-span-full">

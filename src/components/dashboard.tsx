@@ -2,7 +2,6 @@
 
 import { PostGenerator } from '@/components/post-generator';
 import { StatsCards } from '@/components/stats-cards';
-import { ActivityFeed } from '@/components/activity-feed';
 
 export default function Dashboard() {
   return (
@@ -17,7 +16,6 @@ export default function Dashboard() {
             <PostGenerator />
           </div>
           <div className="lg:col-span-3">
-             <ActivityFeed />
           </div>
         </div>
       </div>

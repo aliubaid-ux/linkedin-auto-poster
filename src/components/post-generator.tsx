@@ -48,6 +48,11 @@ export function PostGenerator() {
       toast({ title: "Generating post...", description: "Your new post is being created by AI." });
 
       const generationResult = await generateLinkedInPost({ topicSummary: values.topic, niche: values.niche, tone: profile.tone });
+      
+      if (!generationResult.linkedinPost) {
+        throw new Error("The analysis could not be performed as no LinkedIn post was provided.");
+      }
+
       const optimizationResult = await optimizeLinkedInPostForEngagement({ initialDraft: generationResult.linkedinPost });
       const adaptationResult = await adaptPostToneToUserPreferences({ post: optimizationResult.optimizedText, learnedToneJson: JSON.stringify(learnedTone) });
 
@@ -69,9 +74,32 @@ export function PostGenerator() {
       await addDraft(newDraft);
       form.reset();
       toast({ title: "Post generated!", description: "Your new draft has been created successfully.", variant: "default" });
-    } catch (error) {
+    } catch (error) { 
+      const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred.";
       console.error("Error generating post:", error);
-      toast({ title: "Error", description: "Failed to generate post. Please try again.", variant: "destructive" });
+      
+      const newDraft: Omit<DraftPost, 'id' | 'createdAt' | 'user_id'> = {
+        source: "error",
+        topic: values.topic,
+        raw_generation: "",
+        optimized_text: errorMessage,
+        optimized_meta: {
+          hooks: [],
+          emotional_score: 0,
+          engagement_prediction: 0,
+          tone_score: 0,
+          tone_adjustments: [],
+        },
+        status: "draft",
+      };
+      
+      await addDraft(newDraft);
+
+      toast({ 
+        title: "Error", 
+        description: "Failed to generate post. A draft with the error has been saved.", 
+        variant: "destructive" 
+      });
     } finally {
       setIsLoading(false);
     }

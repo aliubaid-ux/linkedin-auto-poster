@@ -18,6 +18,7 @@ interface AppContextType {
   updateProfile: (profile: Profile) => Promise<void>;
   addDraft: (draft: Omit<DraftPost, 'id' | 'createdAt' | 'user_id'>) => Promise<void>;
   updateDraft: (updatedDraft: DraftPost) => Promise<void>;
+  deleteDraft: (id: string) => Promise<void>;
   addLog: (log: Omit<LogEntry, 'id' | 'createdAt' | 'user_id'>) => Promise<void>;
   setDrafts: React.Dispatch<React.SetStateAction<DraftPost[]>>;
 }
@@ -181,6 +182,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  async function deleteDraft(id: string) {
+    if (!user) return;
+    const { error } = await supabase.from('drafts').delete().eq('id', id);
+    if (error) {
+        console.error('Error deleting draft:', error);
+        toast({ title: "Error deleting draft", description: error.message, variant: "destructive" });
+    } else {
+        setDrafts(prevDrafts => prevDrafts.filter(d => d.id !== id));
+        toast({ title: "Draft deleted successfully!" });
+    }
+  }
+
   async function addLog(log: Omit<LogEntry, 'id' | 'createdAt' | 'user_id'>) {
     if (!user) return;
     const { error } = await supabase.from('logs').insert({ ...log, user_id: user.id });
@@ -207,6 +220,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     updateProfile,
     addDraft,
     updateDraft,
+    deleteDraft,
     addLog,
     setDrafts,
   };
