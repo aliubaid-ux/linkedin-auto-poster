@@ -65,7 +65,6 @@ export function PostGenerator() {
         },
         status: "draft",
         postedAt: null,
-        linkedinPostId: null,
       };
 
       await addDraft(newDraft);
