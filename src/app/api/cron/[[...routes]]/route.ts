@@ -20,16 +20,35 @@ app.get('/daily-post', async c => {
   }
 
   for (const profile of profiles) {
-    const trendingTopics = await getTrendingTopics(profile.niches);
-    const post = await generateLinkedinPost(trendingTopics);
+    try {
+      const trendingTopics = await getTrendingTopics(profile.niches);
+      const post = await generateLinkedinPost(trendingTopics);
 
-    await supabase.from('posts').insert([
-      {
-        profile_id: profile.id,
-        content: post.content,
-        status: 'draft',
-      },
-    ]);
+      await supabase.from('posts').insert([
+        {
+          profile_id: profile.id,
+          content: post.content,
+          status: 'draft',
+        },
+      ]);
+
+      await supabase.from('logs').insert([
+        {
+          profile_id: profile.id,
+          message: `Generated post for topic: ${trendingTopics[0]} `,
+          status: 'success',
+        },
+      ]);
+    } catch (error) {
+      await supabase.from('logs').insert([
+        {
+          profile_id: profile.id,
+          message: 'Error generating daily post',
+          status: 'error',
+          error: JSON.stringify(error),
+        },
+      ]);
+    }
   }
 
   return c.json({message: `${profiles.length} posts generated`});
