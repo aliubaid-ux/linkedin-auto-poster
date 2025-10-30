@@ -45,7 +45,15 @@ Rules:
 - Keep it readable (avg. sentence length short).
 Post to optimize:
 {{{initialDraft}}}
-Return: improved_post_text`,
+Return a JSON object with the following structure:
+{
+  "optimizedText": "The optimized LinkedIn post text.",
+  "optimizedMeta": {
+    "hooks": ["A list of hooks used in the optimized post (e.g., question, stat)."],
+    "emotionalScore": "A score representing the emotional tone of the optimized post (0.0-1.0).",
+    "engagementPrediction": "A predicted engagement score for the optimized post (0.0-1.0)."
+  }
+}`,
 });
 
 const optimizeLinkedInPostForEngagementFlow = ai.defineFlow(

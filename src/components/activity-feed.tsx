@@ -4,14 +4,14 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/com
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ClipboardCopy, Loader2, PenSquare } from "lucide-react";
+import { ClipboardCopy, Loader2, PenSquare, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAppContext } from "@/context/app-provider";
 import { useMemo } from "react";
 
 export function ActivityFeed() {
   const { toast } = useToast();
-  const { drafts, loading } = useAppContext();
+  const { drafts, loading, deleteDraft } = useAppContext();
 
   const sortedDrafts = useMemo(() => {
     return [...drafts].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
@@ -50,7 +50,7 @@ export function ActivityFeed() {
             <div key={draft.id}>
               <div className="flex items-start gap-4">
                 <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted">
-                   <PenSquare className="h-4 w-4 text-muted-foreground" />
+                  <PenSquare className="h-4 w-4 text-muted-foreground" />
                 </div>
                 <div className="flex-1 space-y-1">
                   <p className="font-medium leading-none">{draft.topic}</p>
@@ -73,6 +73,22 @@ export function ActivityFeed() {
                   onClick={() => copyToClipboard(draft.optimized_text)}
                 >
                   <ClipboardCopy className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7"
+                  // onClick={() => editDraft(draft.id)}
+                >
+                  <PenSquare className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7"
+                  onClick={() => deleteDraft(draft.id)}
+                >
+                  <Trash2 className="h-4 w-4" />
                 </Button>
               </div>
               {index < sortedDrafts.slice(0, 5).length - 1 && <Separator className="my-4" />}
