@@ -1,7 +1,5 @@
 import { DraftPost, Profile } from "./types";
 
-const REDDIT_API_URL = "https://www.reddit.com/r/";
-
 // This is a placeholder for a real AI generation call.
 async function generatePost(title: string, selftext: string, profile: Profile): Promise<Partial<DraftPost>> {
   // Simulate AI processing time
@@ -75,9 +73,10 @@ async function generatePost(title: string, selftext: string, profile: Profile): 
 
 export async function getRedditHotPosts(subreddit: string, profile: Profile): Promise<Omit<DraftPost, 'id' | 'createdAt' | 'user_id'>[]> {
   try {
-    const response = await fetch(`${REDDIT_API_URL}${subreddit}/hot.json?limit=5`); // Fetch top 5 hot posts
+    const response = await fetch(`/api/reddit?subreddit=${subreddit}`); // Fetch from the new API route
     if (!response.ok) {
-        throw new Error(`Failed to fetch from Reddit: ${response.statusText}`);
+        const errorData = await response.json();
+        throw new Error(errorData.error || `Failed to fetch from Reddit API route: ${response.statusText}`);
     }
     const data = await response.json();
 
