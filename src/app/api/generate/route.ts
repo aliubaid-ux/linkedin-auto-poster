@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { run } from '@genkit-ai/core';
 import { generatePostFlow } from '@/ai/flows/generate-linkedin-post';
 
 export async function POST(req: NextRequest) {
@@ -10,7 +9,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const generatedContent = await run(generatePostFlow, { topic, context: context || '', profile });
+    const generatedContent = await generatePostFlow({ topic, context: context || '', profile });
     return NextResponse.json(generatedContent);
   } catch (error) {
     console.error('Error generating content:', error);

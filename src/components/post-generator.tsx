@@ -10,7 +10,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Textarea } from "@/components/ui/textarea";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { generatePostFlow } from "@/ai/flows/generate-linkedin-post";
 import { optimizeLinkedInPostForEngagement } from "@/ai/flows/optimize-linkedin-post-for-engagement";
 import { adaptPostToneToUserPreferences } from "@/ai/flows/adapt-post-tone-to-user-preferences";
 import { useToast } from "@/hooks/use-toast";
@@ -47,7 +46,19 @@ export function PostGenerator() {
     try {
       toast({ title: "Generating post...", description: "Your new post is being created by AI." });
 
-      const generationResult = await generatePostFlow({ topic: values.topic, profile: profile, context: '' });
+      const response = await fetch('/api/generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ topic: values.topic, profile, context: '' }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to generate content');
+      }
+
+      const generationResult = await response.json();
       
       if (!generationResult.raw_generation) {
         throw new Error("The analysis could not be performed as no LinkedIn post was provided.");
