@@ -10,7 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Textarea } from "@/components/ui/textarea";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { generateLinkedInPost } from "@/ai/flows/generate-linkedin-post";
+import { generatePostFlow } from "@/ai/flows/generate-linkedin-post";
 import { optimizeLinkedInPostForEngagement } from "@/ai/flows/optimize-linkedin-post-for-engagement";
 import { adaptPostToneToUserPreferences } from "@/ai/flows/adapt-post-tone-to-user-preferences";
 import { useToast } from "@/hooks/use-toast";
@@ -47,19 +47,19 @@ export function PostGenerator() {
     try {
       toast({ title: "Generating post...", description: "Your new post is being created by AI." });
 
-      const generationResult = await generateLinkedInPost({ topicSummary: values.topic, niche: values.niche, tone: profile.tone });
+      const generationResult = await generatePostFlow({ topic: values.topic, profile: profile, context: '' });
       
-      if (!generationResult.linkedinPost) {
+      if (!generationResult.raw_generation) {
         throw new Error("The analysis could not be performed as no LinkedIn post was provided.");
       }
 
-      const optimizationResult = await optimizeLinkedInPostForEngagement({ initialDraft: generationResult.linkedinPost });
+      const optimizationResult = await optimizeLinkedInPostForEngagement({ initialDraft: generationResult.raw_generation });
       const adaptationResult = await adaptPostToneToUserPreferences({ post: optimizationResult.optimizedText, learnedToneJson: JSON.stringify(learnedTone) });
 
       const newDraft: Omit<DraftPost, 'id' | 'createdAt' | 'user_id'> = {
         source: "manual",
         topic: values.topic,
-        raw_generation: generationResult.linkedinPost,
+        raw_generation: generationResult.raw_generation,
         optimized_text: adaptationResult.finalPost,
         optimized_meta: {
           hooks: optimizationResult.optimizedMeta?.hooks || [],
